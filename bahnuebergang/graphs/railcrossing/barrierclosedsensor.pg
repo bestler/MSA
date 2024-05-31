@@ -1,0 +1,17 @@
+graph BarrierClosedSensor {
+
+    states {ClosedDetected, ClosedNotDetected}
+
+    init: ClosedNotDetected { }
+
+    transitions {
+        ClosedDetected -> ClosedNotDetected {
+            guard { Barrier = Open }
+        }
+
+        ClosedNotDetected -> ClosedDetected {
+            guard { Barrier = Closed }
+        }
+    }
+
+}

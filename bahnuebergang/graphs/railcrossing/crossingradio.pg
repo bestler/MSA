@@ -1,0 +1,17 @@
+graph CrossingRadio {
+
+    states {Idle, Sending, Receiving}
+
+    init: Idle {}
+
+    transitions {
+        Idle -> Sending { }
+        
+        Idle -> Receiving { }
+        
+        Sending -> Idle { }
+
+        Receiving -> Idle { }
+    }
+
+}

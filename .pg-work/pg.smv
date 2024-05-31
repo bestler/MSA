@@ -1,0 +1,158 @@
+MODULE _VARS
+    VAR
+        V_Odometer : {L_SlowingDown, L_Acclerating, L_Constant};
+        V_Brake : {L_BrakeInactive, L_BrakeActive};
+        V_TrainRadioModule : {L_Receiving, L_Sending, L_Idle};
+        V_CrossingRadio : {L_Receiving, L_Sending, L_Idle};
+        V_Barrier : {L_Closed, L_Open};
+        V_BarrierClosedSensor : {L_ClosedNotDetected, L_ClosedDetected};
+        V_TrainSensor : {L_Timeout, L_TrainNotPassed, L_TrainPassed};
+        V_BarrierOpenSensor : {L_OpenNotDetected, L_OpenDetected};
+        V_BarrierMotor : {L_GoingDown, L_GoingUp, L_Idle};
+        V_position : {0, 1};
+        V_velocity : 0..160;
+        V_degreeLevel : 0..6;
+
+MODULE _P_Odometer(v)
+    INIT
+        ( v.V_Odometer   =   L_Constant   &   ( v.V_velocity   =   0   &   v.V_position   =   0 ) )
+    TRANS
+        ( ( v.V_Odometer = L_Acclerating ) & ( next(v.V_Odometer) = L_Constant ) & ( next(v.V_position) = v.V_position & next(v.V_velocity) = v.V_velocity ) ) | 
+        ( ( v.V_Odometer = L_SlowingDown ) & ( next(v.V_Odometer) = L_Constant ) & ( next(v.V_position) = v.V_position & next(v.V_velocity) = v.V_velocity ) ) | 
+        ( ( v.V_Odometer = L_Acclerating ) & ( next(v.V_Odometer) = L_Acclerating ) & ( ( v.V_velocity   +   1 )   >=   0   &   ( v.V_velocity   +   1 )   <=   160 ) & ( ( v.V_velocity   <   160   &   v.V_Brake   =   L_BrakeInactive ) ) & ( next(v.V_velocity) = ( v.V_velocity   +   1 ) ) & ( next(v.V_position) = v.V_position ) ) | 
+        ( ( v.V_Odometer = L_SlowingDown ) & ( next(v.V_Odometer) = L_SlowingDown ) & ( ( v.V_velocity   -   1 )   >=   0   &   ( v.V_velocity   -   1 )   <=   160 ) & ( v.V_Brake   =   L_BrakeActive ) & ( next(v.V_velocity) = ( v.V_velocity   -   1 ) ) & ( next(v.V_position) = v.V_position ) ) | 
+        ( ( v.V_Odometer = L_Constant ) & ( next(v.V_Odometer) = L_Acclerating ) & ( ( v.V_velocity   +   1 )   >=   0   &   ( v.V_velocity   +   1 )   <=   160 ) & ( ( v.V_velocity   <   160   &   v.V_Brake   =   L_BrakeInactive ) ) & ( next(v.V_velocity) = ( v.V_velocity   +   1 ) ) & ( next(v.V_position) = v.V_position ) ) | 
+        ( ( v.V_Odometer = L_Constant ) & ( next(v.V_Odometer) = L_SlowingDown ) & ( ( v.V_velocity   -   1 )   >=   0   &   ( v.V_velocity   -   1 )   <=   160 ) & ( v.V_Brake   =   L_BrakeActive ) & ( next(v.V_velocity) = ( v.V_velocity   -   1 ) ) & ( next(v.V_position) = v.V_position ) ) | 
+        (!(
+        	( v.V_Odometer = L_Acclerating ) | 
+        	( v.V_Odometer = L_SlowingDown ) | 
+        	( v.V_Odometer = L_Acclerating ) & ( ( v.V_velocity   +   1 )   >=   0   &   ( v.V_velocity   +   1 )   <=   160 ) & ( ( v.V_velocity   <   160   &   v.V_Brake   =   L_BrakeInactive ) ) | 
+        	( v.V_Odometer = L_SlowingDown ) & ( ( v.V_velocity   -   1 )   >=   0   &   ( v.V_velocity   -   1 )   <=   160 ) & ( v.V_Brake   =   L_BrakeActive ) | 
+        	( v.V_Odometer = L_Constant ) & ( ( v.V_velocity   +   1 )   >=   0   &   ( v.V_velocity   +   1 )   <=   160 ) & ( ( v.V_velocity   <   160   &   v.V_Brake   =   L_BrakeInactive ) ) | 
+        	( v.V_Odometer = L_Constant ) & ( ( v.V_velocity   -   1 )   >=   0   &   ( v.V_velocity   -   1 )   <=   160 ) & ( v.V_Brake   =   L_BrakeActive ))
+        	 & next(v.V_Odometer) = v.V_Odometer & next(v.V_position) = v.V_position & next(v.V_velocity) = v.V_velocity);
+
+MODULE _P_Brake(v)
+    INIT
+        v.V_Brake   =   L_BrakeInactive
+    TRANS
+        ( ( v.V_Brake = L_BrakeInactive ) & ( next(v.V_Brake) = L_BrakeActive ) & ( v.V_Barrier   =   L_Open ) ) | 
+        ( ( v.V_Brake = L_BrakeActive ) & ( next(v.V_Brake) = L_BrakeInactive ) & ( v.V_Barrier   =   L_Closed ) ) | 
+        ( ( v.V_Brake = L_BrakeActive ) & ( next(v.V_Brake) = L_BrakeActive ) & ( v.V_velocity   >   0 ) ) | 
+        (!(
+        	( v.V_Brake = L_BrakeInactive ) & ( v.V_Barrier   =   L_Open ) | 
+        	( v.V_Brake = L_BrakeActive ) & ( v.V_Barrier   =   L_Closed ) | 
+        	( v.V_Brake = L_BrakeActive ) & ( v.V_velocity   >   0 ))
+        	 & next(v.V_Brake) = v.V_Brake);
+
+MODULE _P_TrainRadioModule(v)
+    INIT
+        v.V_TrainRadioModule   =   L_Idle
+    TRANS
+        ( ( v.V_TrainRadioModule = L_Receiving ) & ( next(v.V_TrainRadioModule) = L_Idle ) ) | 
+        ( ( v.V_TrainRadioModule = L_Idle ) & ( next(v.V_TrainRadioModule) = L_Receiving ) ) | 
+        ( ( v.V_TrainRadioModule = L_Sending ) & ( next(v.V_TrainRadioModule) = L_Idle ) ) | 
+        ( ( v.V_TrainRadioModule = L_Idle ) & ( next(v.V_TrainRadioModule) = L_Sending ) ) | 
+        (!(
+        	( v.V_TrainRadioModule = L_Receiving ) | 
+        	( v.V_TrainRadioModule = L_Idle ) | 
+        	( v.V_TrainRadioModule = L_Sending ) | 
+        	( v.V_TrainRadioModule = L_Idle ))
+        	 & next(v.V_TrainRadioModule) = v.V_TrainRadioModule);
+
+MODULE _P_CrossingRadio(v)
+    INIT
+        v.V_CrossingRadio   =   L_Idle
+    TRANS
+        ( ( v.V_CrossingRadio = L_Receiving ) & ( next(v.V_CrossingRadio) = L_Idle ) ) | 
+        ( ( v.V_CrossingRadio = L_Sending ) & ( next(v.V_CrossingRadio) = L_Idle ) ) | 
+        ( ( v.V_CrossingRadio = L_Idle ) & ( next(v.V_CrossingRadio) = L_Receiving ) ) | 
+        ( ( v.V_CrossingRadio = L_Idle ) & ( next(v.V_CrossingRadio) = L_Sending ) ) | 
+        (!(
+        	( v.V_CrossingRadio = L_Receiving ) | 
+        	( v.V_CrossingRadio = L_Sending ) | 
+        	( v.V_CrossingRadio = L_Idle ) | 
+        	( v.V_CrossingRadio = L_Idle ))
+        	 & next(v.V_CrossingRadio) = v.V_CrossingRadio);
+
+MODULE _P_Barrier(v)
+    INIT
+        v.V_Barrier   =   L_Open
+    TRANS
+        ( ( v.V_Barrier = L_Closed ) & ( next(v.V_Barrier) = L_Open ) & ( v.V_degreeLevel   =   6 ) ) | 
+        ( ( v.V_Barrier = L_Open ) & ( next(v.V_Barrier) = L_Closed ) & ( v.V_degreeLevel   =   0 ) ) | 
+        (!(
+        	( v.V_Barrier = L_Closed ) & ( v.V_degreeLevel   =   6 ) | 
+        	( v.V_Barrier = L_Open ) & ( v.V_degreeLevel   =   0 ))
+        	 & next(v.V_Barrier) = v.V_Barrier);
+
+MODULE _P_BarrierClosedSensor(v)
+    INIT
+        v.V_BarrierClosedSensor   =   L_ClosedNotDetected
+    TRANS
+        ( ( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedDetected ) & ( v.V_Barrier   =   L_Closed ) ) | 
+        ( ( v.V_BarrierClosedSensor = L_ClosedDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedNotDetected ) & ( v.V_Barrier   =   L_Open ) ) | 
+        (!(
+        	( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( v.V_Barrier   =   L_Closed ) | 
+        	( v.V_BarrierClosedSensor = L_ClosedDetected ) & ( v.V_Barrier   =   L_Open ))
+        	 & next(v.V_BarrierClosedSensor) = v.V_BarrierClosedSensor);
+
+MODULE _P_TrainSensor(v)
+    INIT
+        v.V_TrainSensor   =   L_TrainNotPassed
+    TRANS
+        ( ( v.V_TrainSensor = L_Timeout ) & ( next(v.V_TrainSensor) = L_TrainPassed ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_Timeout ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainPassed ) ) | 
+        ( ( v.V_TrainSensor = L_TrainPassed ) & ( next(v.V_TrainSensor) = L_TrainNotPassed ) ) | 
+        (!(
+        	( v.V_TrainSensor = L_Timeout ) | 
+        	( v.V_TrainSensor = L_TrainNotPassed ) | 
+        	( v.V_TrainSensor = L_TrainNotPassed ) | 
+        	( v.V_TrainSensor = L_TrainPassed ))
+        	 & next(v.V_TrainSensor) = v.V_TrainSensor);
+
+MODULE _P_BarrierOpenSensor(v)
+    INIT
+        v.V_BarrierOpenSensor   =   L_OpenDetected
+    TRANS
+        ( ( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenDetected ) & ( v.V_Barrier   =   L_Open ) ) | 
+        ( ( v.V_BarrierOpenSensor = L_OpenDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenNotDetected ) & ( v.V_Barrier   =   L_Closed ) ) | 
+        (!(
+        	( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( v.V_Barrier   =   L_Open ) | 
+        	( v.V_BarrierOpenSensor = L_OpenDetected ) & ( v.V_Barrier   =   L_Closed ))
+        	 & next(v.V_BarrierOpenSensor) = v.V_BarrierOpenSensor);
+
+MODULE _P_BarrierMotor(v)
+    INIT
+        ( v.V_BarrierMotor   =   L_Idle   &   v.V_degreeLevel   =   0 )
+    TRANS
+        ( ( v.V_BarrierMotor = L_GoingDown ) & ( next(v.V_BarrierMotor) = L_GoingDown ) & ( ( v.V_degreeLevel   -   1 )   >=   0   &   ( v.V_degreeLevel   -   1 )   <=   6 ) & ( v.V_degreeLevel   >=   0 ) & ( next(v.V_degreeLevel) = ( v.V_degreeLevel   -   1 ) ) ) | 
+        ( ( v.V_BarrierMotor = L_GoingUp ) & ( next(v.V_BarrierMotor) = L_GoingUp ) & ( ( v.V_degreeLevel   +   1 )   >=   0   &   ( v.V_degreeLevel   +   1 )   <=   6 ) & ( v.V_degreeLevel   >=   6 ) & ( next(v.V_degreeLevel) = ( v.V_degreeLevel   +   1 ) ) ) | 
+        ( ( v.V_BarrierMotor = L_GoingDown ) & ( next(v.V_BarrierMotor) = L_Idle ) & ( next(v.V_degreeLevel) = v.V_degreeLevel ) ) | 
+        ( ( v.V_BarrierMotor = L_GoingUp ) & ( next(v.V_BarrierMotor) = L_Idle ) & ( next(v.V_degreeLevel) = v.V_degreeLevel ) ) | 
+        ( ( v.V_BarrierMotor = L_Idle ) & ( next(v.V_BarrierMotor) = L_GoingDown ) & ( ( ( v.V_TrainSensor   =   L_TrainPassed   &   v.V_BarrierClosedSensor   =   L_ClosedDetected )   &   v.V_BarrierOpenSensor   =   L_OpenNotDetected ) ) & ( next(v.V_degreeLevel) = v.V_degreeLevel ) ) | 
+        ( ( v.V_BarrierMotor = L_Idle ) & ( next(v.V_BarrierMotor) = L_GoingUp ) & ( ( v.V_degreeLevel   +   1 )   >=   0   &   ( v.V_degreeLevel   +   1 )   <=   6 ) & ( v.V_degreeLevel   <=   6 ) & ( next(v.V_degreeLevel) = ( v.V_degreeLevel   +   1 ) ) ) | 
+        (!(
+        	( v.V_BarrierMotor = L_GoingDown ) & ( ( v.V_degreeLevel   -   1 )   >=   0   &   ( v.V_degreeLevel   -   1 )   <=   6 ) & ( v.V_degreeLevel   >=   0 ) | 
+        	( v.V_BarrierMotor = L_GoingUp ) & ( ( v.V_degreeLevel   +   1 )   >=   0   &   ( v.V_degreeLevel   +   1 )   <=   6 ) & ( v.V_degreeLevel   >=   6 ) | 
+        	( v.V_BarrierMotor = L_GoingDown ) | 
+        	( v.V_BarrierMotor = L_GoingUp ) | 
+        	( v.V_BarrierMotor = L_Idle ) & ( ( ( v.V_TrainSensor   =   L_TrainPassed   &   v.V_BarrierClosedSensor   =   L_ClosedDetected )   &   v.V_BarrierOpenSensor   =   L_OpenNotDetected ) ) | 
+        	( v.V_BarrierMotor = L_Idle ) & ( ( v.V_degreeLevel   +   1 )   >=   0   &   ( v.V_degreeLevel   +   1 )   <=   6 ) & ( v.V_degreeLevel   <=   6 ))
+        	 & next(v.V_BarrierMotor) = v.V_BarrierMotor & next(v.V_degreeLevel) = v.V_degreeLevel);
+
+MODULE main
+    VAR
+        v : _VARS();
+        p_Odometer : _P_Odometer(v);
+        p_Brake : _P_Brake(v);
+        p_TrainRadioModule : _P_TrainRadioModule(v);
+        p_CrossingRadio : _P_CrossingRadio(v);
+        p_Barrier : _P_Barrier(v);
+        p_BarrierClosedSensor : _P_BarrierClosedSensor(v);
+        p_TrainSensor : _P_TrainSensor(v);
+        p_BarrierOpenSensor : _P_BarrierOpenSensor(v);
+        p_BarrierMotor : _P_BarrierMotor(v);
+
+

@@ -1,0 +1,2 @@
+go
+check_ltlspec -p "! (   ( TRUE )   U   ( v.V_num   =   5 )   )"

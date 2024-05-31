@@ -1,0 +1,18 @@
+graph TrainSensor {
+
+    states {TrainPassed, TrainNotPassed, Timeout}
+
+    init: TrainNotPassed {}
+
+    transitions {
+        TrainPassed -> TrainNotPassed {}
+
+        TrainNotPassed -> TrainPassed {}
+
+        TrainNotPassed -> Timeout {}
+
+        Timeout -> TrainPassed {}
+
+    }
+
+}

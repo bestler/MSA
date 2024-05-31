@@ -1,0 +1,18 @@
+graph TrainRadioModule {
+
+    states {Idle, Sending, Receiving}
+
+    init: Idle{ }
+
+    transitions {
+        Idle -> Sending {}
+
+        Sending -> Idle {}
+
+        Idle -> Receiving {}
+
+        Receiving -> Idle {}
+
+    }
+
+}

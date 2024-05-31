@@ -1,0 +1,19 @@
+graph Barrier {
+
+    states {Open, Closed}
+
+    init: Open {}
+
+    transitions {
+
+        Open -> Closed {
+            guard { degreeLevel = 0 }
+        }
+
+        Closed -> Open {
+            guard { degreeLevel = 6 }
+        }
+
+    }
+
+}

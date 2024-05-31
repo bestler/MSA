@@ -1,0 +1,58 @@
+MODULE _VARS
+    VAR
+        V_Errorgraph : {L_No, L_Yes};
+        V_Robot : {L_idle, L_busy, L_inactive};
+        V_LightBarrier : {L_idle, L_signal};
+        V_num : 0..7;
+
+MODULE _P_Errorgraph(v)
+    INIT
+        (   v.V_Errorgraph   =   L_No   )
+    TRANS
+        ( ( v.V_Errorgraph = L_No ) & ( next(v.V_Errorgraph) = L_No ) ) | 
+        ( ( v.V_Errorgraph = L_No ) & ( next(v.V_Errorgraph) = L_Yes ) ) | 
+        (!(
+        	( v.V_Errorgraph = L_No ) | 
+        	( v.V_Errorgraph = L_No ))
+        	 & next(v.V_Errorgraph) = v.V_Errorgraph);
+
+MODULE _P_Robot(v)
+    INIT
+        v.V_num   =   0 & (   v.V_Robot   =   L_idle   )
+    TRANS
+        ( ( v.V_Robot = L_idle ) & ( next(v.V_Robot) = L_busy ) & ( ( v.V_num   +   1 )   >=   0   &   ( v.V_num   +   1 )   <=   7 ) & ( v.V_LightBarrier   =   L_signal ) & ( next(v.V_num) = v.V_num   +   1 ) ) | 
+        ( ( v.V_Robot = L_busy ) & ( next(v.V_Robot) = L_idle ) & ( v.V_num   <   3 ) & ( next(v.V_num) = v.V_num ) ) | 
+        ( ( v.V_Robot = L_busy ) & ( next(v.V_Robot) = L_inactive ) & ( v.V_num   >=   3 ) & ( next(v.V_num) = v.V_num ) ) | 
+        ( ( v.V_Robot = L_busy ) & ( next(v.V_Robot) = L_busy ) & ( next(v.V_num) = v.V_num ) ) | 
+        ( ( v.V_Robot = L_inactive ) & ( next(v.V_Robot) = L_idle ) & ( v.V_Errorgraph   !=   L_No ) & ( next(v.V_num) = v.V_num ) ) | 
+        (!(
+        	( v.V_Robot = L_idle ) & ( ( v.V_num   +   1 )   >=   0   &   ( v.V_num   +   1 )   <=   7 ) & ( v.V_LightBarrier   =   L_signal ) | 
+        	( v.V_Robot = L_busy ) & ( v.V_num   <   3 ) | 
+        	( v.V_Robot = L_busy ) & ( v.V_num   >=   3 ) | 
+        	( v.V_Robot = L_busy ) | 
+        	( v.V_Robot = L_inactive ) & ( v.V_Errorgraph   !=   L_No ))
+        	 & next(v.V_Robot) = v.V_Robot & next(v.V_num) = v.V_num);
+
+MODULE _P_LightBarrier(v)
+    INIT
+        TRUE
+    TRANS
+        ( ( v.V_LightBarrier = L_idle ) & ( next(v.V_LightBarrier) = L_idle ) ) | 
+        ( ( v.V_LightBarrier = L_idle ) & ( next(v.V_LightBarrier) = L_signal ) ) | 
+        ( ( v.V_LightBarrier = L_signal ) & ( next(v.V_LightBarrier) = L_idle ) ) | 
+        ( ( v.V_LightBarrier = L_signal ) & ( next(v.V_LightBarrier) = L_signal ) ) | 
+        (!(
+        	( v.V_LightBarrier = L_idle ) | 
+        	( v.V_LightBarrier = L_idle ) | 
+        	( v.V_LightBarrier = L_signal ) | 
+        	( v.V_LightBarrier = L_signal ))
+        	 & next(v.V_LightBarrier) = v.V_LightBarrier);
+
+MODULE main
+    VAR
+        v : _VARS();
+        p_Errorgraph : _P_Errorgraph(v);
+        p_Robot : _P_Robot(v);
+        p_LightBarrier : _P_LightBarrier(v);
+
+

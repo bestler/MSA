@@ -1,0 +1,23 @@
+graph Brake {
+
+    states {BrakeActive, BrakeInactive}
+
+    init: BrakeInactive {}
+
+    transitions {
+
+        BrakeActive -> BrakeActive {
+            guard { velocity > 0 }
+        }
+
+        BrakeActive -> BrakeInactive {
+            guard { Barrier = Closed }
+        }
+        
+        BrakeInactive -> BrakeActive {
+            guard { Barrier = Open }
+        }
+
+    }
+
+}
