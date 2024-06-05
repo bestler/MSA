@@ -1,37 +1,22 @@
 graph Odometer {
 
     vars {
-        int velocity [0..160]
+        int position_m [-1000..1000]
+        int velocity_m [0..44]
     }
 
-    states {Constant, Acclerating, SlowingDown}
+    states {Measuring}
 
-    init: Constant { velocity = 0}
+    init: Measuring { velocity_m = 44 & position_m = -1000}
 
     transitions {
-        Constant -> SlowingDown {
-            guard { Brake = BrakeActive}
-            action { velocity := velocity - 1 }
+
+        Measuring -> Measuring {
+            action {
+                position_m := position;
+                velocity_m := velocity
+            }
         }
-
-        Constant -> Acclerating {
-            guard { velocity < 160 & Brake = BrakeInactive }
-            action {velocity := velocity + 1 }
-        }
-
-        SlowingDown -> SlowingDown {
-            guard { Brake = BrakeActive}
-            action { velocity := velocity - 1 }
-        }
-
-        Acclerating -> Acclerating {
-            guard { velocity < 160 & Brake = BrakeInactive }
-            action { velocity := velocity +1 } 
-        }
-
-       SlowingDown -> Constant {}
-
-       Acclerating -> Constant {}
     }
 
 }

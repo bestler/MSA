@@ -6,11 +6,11 @@ graph BarrierOpenSensor {
 
     transitions {
         OpenDetected -> OpenNotDetected {
-            guard { Barrier = Closed }
+            guard { degreeLevel != 6}
         }
 
         OpenNotDetected -> OpenDetected {
-            guard { Barrier = Open }
+            guard { degreeLevel = 6 }
         }
     }
 

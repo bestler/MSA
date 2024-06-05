@@ -6,16 +6,12 @@ graph Brake {
 
     transitions {
 
-        BrakeActive -> BrakeActive {
-            guard { velocity > 0 }
+        BrakeInactive -> BrakeActive {
+            guard { TrainControl = NBEP }
         }
 
-        BrakeActive -> BrakeInactive {
-            guard { Barrier = Closed }
-        }
-        
-        BrakeInactive -> BrakeActive {
-            guard { Barrier = Open }
+        BrakeActive -> BrakeActive {
+            guard { TrainControl = NBEP }
         }
 
     }

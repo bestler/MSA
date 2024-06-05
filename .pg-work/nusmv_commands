@@ -1,6 +1,6 @@
 go
 pick_state -r
-simulate -r -k 22
+simulate -r -k 54
 pick_state -r
 simulate -r -v -k 10
 quit

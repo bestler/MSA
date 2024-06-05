@@ -5,13 +5,17 @@ graph TrainRadioModule {
     init: Idle{ }
 
     transitions {
-        Idle -> Sending {}
+        Idle -> Sending {
+            guard { TrainControl = EP }
+        }
 
-        Sending -> Idle {}
+        Sending -> Sending {
+            guard { TrainControl = AP }
+        }
 
-        Idle -> Receiving {}
-
-        Receiving -> Idle {}
+        Sending -> Receiving {
+            guard { CrossingRadio = Sending }
+        }
 
     }
 

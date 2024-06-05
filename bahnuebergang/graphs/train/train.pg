@@ -1,0 +1,25 @@
+graph Train {
+
+    vars {
+        int position [-1000..1000]
+        int velocity [0..44]
+    }
+
+    states {Drive}
+
+    init: Drive {velocity = 44}
+
+    transitions {
+        Drive -> Drive {
+            action {
+                position := position + velocity
+            }
+        }
+
+        Drive -> Drive {
+            guard { Brake = BrakeActive }
+            action { velocity := velocity - a }
+        }
+    }
+
+}

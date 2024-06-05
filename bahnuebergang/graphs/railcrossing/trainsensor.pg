@@ -1,17 +1,33 @@
 graph TrainSensor {
 
+    vars {
+        int time [0..500]
+    }
+
     states {TrainPassed, TrainNotPassed, Timeout}
 
-    init: TrainNotPassed {}
+    init: TrainNotPassed {time = 0}
 
     transitions {
-        TrainPassed -> TrainNotPassed {}
 
-        TrainNotPassed -> TrainPassed {}
+        TrainNotPassed -> TrainPassed {
+            guard {position_m = 5 }
+            action {
+                time:= 0
+            }
+        }
 
-        TrainNotPassed -> Timeout {}
+        TrainNotPassed -> TrainNotPassed {
+            guard {CrossingControl = Safe}
+            action {
+                time:= time + 1
+            }
+        }
 
-        Timeout -> TrainPassed {}
+        TrainNotPassed -> Timeout {
+            guard {time = 500}
+        }
+
 
     }
 

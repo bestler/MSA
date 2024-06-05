@@ -1,38 +1,27 @@
 graph BarrierMotor {
 
-    vars {
-        int degreeLevel [0..6]
-    }
+    states { Idle, Forward, Backward }
 
-    states { Idle, GoingUp, GoingDown }
-
-    init: Idle { degreeLevel = 0 }
+    init: Idle { }
 
     transitions {
-        Idle -> GoingUp {
-            guard { degreeLevel <= 6 }
-            action { degreeLevel := degreeLevel + 1 }
+        Idle -> Forward {
+            guard { CrossingControl = Closing }
+            
+        }
+        
+        Forward -> Idle {
+            guard { CrossingControl = Safe }
         }
 
-        Idle -> GoingDown {
-            guard { TrainSensor = TrainPassed & 
-                    BarrierClosedSensor = ClosedDetected & 
-                    BarrierOpenSensor = OpenNotDetected }
+        Idle -> Backward {
+            guard { CrossingControl = Opening }  
         }
 
-        GoingUp -> Idle { }
-
-        GoingDown -> Idle { }
-
-        GoingUp -> GoingUp {
-            guard { degreeLevel>= 6 }
-            action { degreeLevel := degreeLevel +1 }
+        Backward -> Idle {
+            guard { CrossingControl = NotSafe }
         }
 
-        GoingDown -> GoingDown {
-            guard { degreeLevel >= 0 }
-            action { degreeLevel := degreeLevel - 1 }
-        }
-    }
+    }        
 
 }

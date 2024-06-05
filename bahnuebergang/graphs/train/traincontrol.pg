@@ -1,0 +1,51 @@
+graph TrainControl {
+
+    vars {
+        int c [0..3]
+        int a [0..1]
+        int z [0..10]
+        int ep [-1000..0]
+        int ap [-1000..0]
+        int bep [-1000..0]
+        int gp [0..0]
+    }
+
+    states {BeforeEP, EP, AP, BEP, NBEP, GP, SP}
+
+    init: BeforeEP {
+        c = 3 & 
+        a = 1 &
+        z = 3 &
+        bep = (0 - z - ((velocity_m * velocity_m) / (2 * a)) ) &
+        ap = (bep - (2 * c * velocity_m)) &
+        ep = (ap - (velocity_m) * (t + c))
+        }
+
+    transitions {
+
+        BeforeEP -> EP {
+            guard { position_m = ep }
+        }
+
+        EP -> AP {
+            guard { position_m = ap}
+        }
+
+        AP -> BEP {
+            guard { position_m = bep }
+        }
+
+        BEP -> NBEP {
+            guard { TrainRadioModule != Receiving }
+        }
+
+        BEP -> GP {
+            guard { position_m = 0 }
+        }
+
+        GP -> SP {
+            guard { TrainSensor = TrainPassed }
+        }
+
+    }
+}
