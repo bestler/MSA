@@ -81,7 +81,7 @@ MODULE _P_TrainRadioModule(v)
 
 MODULE _P_Train(v)
     INIT
-        ( v.V_Train   =   L_Drive   &   v.V_velocity   =   44 )
+        ( v.V_Train   =   L_Drive   &   ( v.V_velocity   =   44   &   v.V_position   =   -1000 ) )
     TRANS
         ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_velocity   -   v.V_a )   >=   0   &   ( v.V_velocity   -   v.V_a )   <=   44 ) & ( v.V_Brake   =   L_BrakeActive ) & ( next(v.V_velocity) = ( v.V_velocity   -   v.V_a ) ) & ( next(v.V_position) = v.V_position ) ) | 
         ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -1000   &   ( v.V_position   +   v.V_velocity )   <=   1000 ) & ( next(v.V_position) = ( v.V_position   +   v.V_velocity ) ) & ( next(v.V_velocity) = v.V_velocity ) ) | 

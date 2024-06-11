@@ -1,6 +1,17 @@
 go
-pick_state -r
-simulate -r -k 54
-pick_state -r
-simulate -r -v -k 10
-quit
+check_ltlspec -p "G   v.V_velocity   =   v.V_velocity_m"
+check_ltlspec -p "G   ( v.V_degreeLevel   >=   0   |   v.V_degreeLevel   <=   6 )"
+check_ltlspec -p "G   ( v.V_BarrierMotor   =   L_Forward   ->   ( v.V_BarrierMotor   =   L_Forward   U   v.V_BarrierClosedSensor   =   L_ClosedDetected ) )"
+check_ltlspec -p "G   ( v.V_degreeLevel   !=   0   ->   v.V_BarrierClosedSensor   =   L_ClosedNotDetected )"
+check_ltlspec -p "G   ( ( v.V_CrossingControl   =   L_Closing   &   v.V_degreeLevel   =   1 )   ->   X   v.V_BarrierClosedSensor   =   L_ClosedDetected )"
+check_ltlspec -p "G   ( v.V_TrainControl   =   L_BEP   ->   X   v.V_TrainRadioModule   =   L_Sending )"
+check_ltlspec -p "G   ( v.V_TrainControl   =   L_AP   ->   X   v.V_TrainRadioModule   =   L_Sending )"
+check_ltlspec -p "G   ( v.V_TrainSensor   =   L_TrainPassed   ->   F   v.V_BarrierOpenSensor   =   L_OpenDetected )"
+check_ltlspec -p "G   ( v.V_TrainRadioModule   =   L_Sending   ->   F   v.V_CrossingRadio   =   L_Receiving )"
+check_ltlspec -p "G   ( v.V_degreeLevel   =   0   ->   v.V_CrossingControl   =   L_Safe )"
+check_ltlspec -p "G   ( v.V_BarrierClosedSensor   =   L_ClosedDetected   ->   F   v.V_BarrierOpenSensor   =   L_OpenDetected )"
+check_ltlspec -p "G   ( v.V_TrainControl   =   L_BEP   ->   ( v.V_Brake   =   L_BrakeActive   |   v.V_BarrierClosedSensor   =   L_ClosedDetected ) )"
+check_ltlspec -p "G   ( v.V_CrossingControl   =   L_Closing   ->   X   v.V_CrossingControl   =   L_Safe )"
+check_ltlspec -p "G   ( ( v.V_TrainRadioModule   =   L_Receiving   &   v.V_TrainControl   =   L_BEP )   ->   G   v.V_position   >   0 )"
+check_ltlspec -p "G   ( v.V_Brake   =   L_BrakeActive   ->   G   v.V_Brake   =   L_BrakeActive )"
+check_ltlspec -p "G   ( v.V_Brake   =   L_BrakeActive   ->   F   v.V_velocity   =   0 )"

@@ -7,7 +7,7 @@ graph Train {
 
     states {Drive}
 
-    init: Drive {velocity = 44}
+    init: Drive {velocity = 44 & position = -1000}
 
     transitions {
         Drive -> Drive {
