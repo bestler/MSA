@@ -1,12 +1,12 @@
 graph TrainControl {
 
     vars {
-        int c [0..3]
-        int a [0..1]
-        int z [0..10]
-        int ep [-1000..0]
-        int ap [-1000..0]
-        int bep [-1000..0]
+        int c [3..3]
+        int a [5..5]
+        int z [3..3]
+        int ep [-2000..0]
+        int ap [-2000..0]
+        int bep [-2000..0]
         int gp [0..0]
     }
 
@@ -14,7 +14,7 @@ graph TrainControl {
 
     init: BeforeEP {
         c = 3 & 
-        a = 1 &
+        a = 5 &
         z = 3 &
         bep = (0 - z - ((velocity_m * velocity_m) / (2 * a)) ) &
         ap = (bep - (2 * c * velocity_m)) &
@@ -24,15 +24,15 @@ graph TrainControl {
     transitions {
 
         BeforeEP -> EP {
-            guard { position_m = ep }
+            guard { position_m > ep }
         }
 
         EP -> AP {
-            guard { position_m = ap}
+            guard { position_m > ap & position_m < bep}
         }
 
         AP -> BEP {
-            guard { position_m = bep }
+            guard { position_m > bep & position_m < gp }
         }
 
         BEP -> NBEP {
