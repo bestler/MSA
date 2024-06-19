@@ -1,12 +1,12 @@
 graph CrossingControl {
 
     vars {
-        int t [10..10]
+        int t [30..30]
     }
 
     states {Safe, NotSafe, Closing, Opening}
 
-    init: NotSafe { t=10 }
+    init: NotSafe { t=30 }
 
     transitions {
         NotSafe -> Closing {
@@ -20,5 +20,10 @@ graph CrossingControl {
         Safe -> Opening {
             guard { TrainSensor = TrainPassed | TrainSensor = Timeout }
         }
+
+        Opening -> NotSafe {
+            guard { BarrierOpenSensor = OpenDetected & BarrierClosedSensor != ClosedDetected }
+        }
+
     }
 }

@@ -10,11 +10,11 @@ model Bahnuebergang {
         }
 
         "Wenn der Bahnübergang nicht gesichert ist, kommt der Zug vor dem Gefahrenpunkt zum stehen" {
-            G (TrainControl = BEP & TrainRadioModule = Receiving => G (position > 0))
+            G ((CrossingControl != Safe & TrainControl = BEP) => G (position < 0))
         }
 
         "Nach dem Schließen ist der Bahnübergang gesichert" {
-            G (CrossingControl = Closing => X (CrossingControl = Safe))
+            G (CrossingControl = Closing => F (CrossingControl = Safe))
         }
 
         "Wenn wir am Bremseinsatzpunkt sind, ist entweder der Übergang gesichert oder die Bremse aktiv" {
@@ -26,11 +26,11 @@ model Bahnuebergang {
         }
 
         "Wenn der Winkel bei 0 ist, ist die Anlage gesichert" {
-            G (degreeLevel = 0 => CrossingControl = Safe)
+            G ( X (degreeLevel = 0) & (BarrierMotor = Forward) => F (BarrierClosedSensor = ClosedDetected) & F (CrossingControl = Safe))
         }
 
-        "Wenn der Zug sendet, empfängt die Übergangssteuerung" {
-            G (TrainRadioModule = Sending => F (CrossingRadio = Receiving))
+        "Wenn der Zug sendet, dann empfängt die Übergangssteuerung das Signal im nächsten Schritt" {
+            G (((TrainRadioModule = Idle | TrainRadioModule = Receiving) & X (TrainRadioModule = Sending)) => X X  (CrossingRadio = Receiving))
         }
 
         "Wenn der Zug den Sensor passiert hat, wird die Schranke geöffnet" {
@@ -41,16 +41,16 @@ model Bahnuebergang {
             G (TrainControl = AP => X (TrainRadioModule = Sending))
         }
 
-        "Der Zug schickt eine Nachricht, wenn er an BEP angekommen ist" {
-            G (TrainControl = BEP => X (TrainRadioModule = Sending))
+        "Der Zug schickt eine Nachricht, wenn er an EP angekommen ist" {
+            G (TrainControl = EP => X (TrainRadioModule = Sending))
         }
 
         "Wenn die Schranke ein Level vor geschlossen ist und geschlossen wird, ist sie im nächsten Schritt geschlossen" {
-            G (degreeLevel = 1 & CrossingControl = Closing => X (BarrierClosedSensor = ClosedDetected))
+            G (degreeLevel = 1 & CrossingControl = Closing => X X (BarrierClosedSensor = ClosedDetected))
         }
 
-        "Wenn die Schranke bei 0 Grad ist, dann sagt der Sensor, dass die Schranke geschlossen ist" {
-            G (degreeLevel != 0 => BarrierClosedSensor = ClosedNotDetected )
+        "Wenn die Schranke nciht bei 0 Grad ist, dann erkennt der Sensor, dass die Schranke nicht geschlossen ist" {
+            G (degreeLevel != 0 => BarrierClosedSensor = ClosedNotDetected | X (BarrierClosedSensor = ClosedNotDetected))
         }
 
         "Der Schranken-Motor ist so lange aktiv, bis die Anlage geschlossen ist" {
@@ -62,7 +62,14 @@ model Bahnuebergang {
         }
 
         "Der Hodometer hat immer die aktuelle Geschwindigkeit des Zugs" {
-            G (velocity = velocity_m)
+            # Es dauert ein Takt, bis der Hodometer die aktuelle Geschwindigkeit hat
+            G (velocity - velocity_m <= a)
         }
+
+        "Der Zug muss nie eine Notbremsung durchführen" {
+            G (TrainControl != NBEP)
+        }
+
+
     }
 }

@@ -1,13 +1,13 @@
 graph Train {
 
     vars {
-        int position [-1000..500]
+        int position [-3000..500]
         int velocity [0..44]
     }
 
     states {Drive}
 
-    init: Drive {velocity = 30 & position = -1000}
+    init: Drive {velocity = 44 & position = -3000}
 
     transitions {
         Drive -> Drive {
@@ -21,8 +21,11 @@ graph Train {
             action { velocity := velocity - a }
         }
 
+        # Wenn die Bremsleistung größer als die verbleibende Geschwindigkeit ist, soll der Zug zum stehen kommen
+        # -> keine negative Geschwidingkeit
         Drive -> Drive {
-            guard { Brake = BrakeActive & velocity < a }
+            guard { Brake = BrakeActive & velocity <= a }
+            action { velocity := 0 }
         }
     }
 

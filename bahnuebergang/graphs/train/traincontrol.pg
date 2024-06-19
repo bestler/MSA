@@ -1,8 +1,8 @@
 graph TrainControl {
 
     vars {
-        int c [3..3]
-        int a [5..5]
+        int c [5..5]
+        int a [10..10]
         int z [3..3]
         int gp [0..0]
     }
@@ -10,8 +10,8 @@ graph TrainControl {
     states {BeforeEP, EP, AP, BEP, NBEP, GP, SP}
 
     init: BeforeEP {
-        c = 3 & 
-        a = 5 &
+        c = 5 & 
+        a = 10 &
         z = 3 &
         gp = 0
         }
@@ -35,7 +35,7 @@ graph TrainControl {
         }
 
         BEP -> GP {
-            guard { position_m = 0 }
+            guard { position_m > 0 & position_m < endOfCrossingPos }
         }
 
         GP -> SP {
