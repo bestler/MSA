@@ -1,18 +1,3 @@
 go
-check_ltlspec -p "G   v.V_TrainControl   !=   L_NBEP"
-check_ltlspec -p "G   ( v.V_velocity   -   v.V_velocity_m )   <=   v.V_a"
-check_ltlspec -p "G   ( v.V_degreeLevel   >=   0   |   v.V_degreeLevel   <=   6 )"
-check_ltlspec -p "G   ( v.V_BarrierMotor   =   L_Forward   ->   ( v.V_BarrierMotor   =   L_Forward   U   v.V_BarrierClosedSensor   =   L_ClosedDetected ) )"
-check_ltlspec -p "G   ( v.V_degreeLevel   !=   0   ->   ( v.V_BarrierClosedSensor   =   L_ClosedNotDetected   |   X   v.V_BarrierClosedSensor   =   L_ClosedNotDetected ) )"
-check_ltlspec -p "G   ( ( v.V_CrossingControl   =   L_Closing   &   v.V_degreeLevel   =   1 )   ->   X   X   v.V_BarrierClosedSensor   =   L_ClosedDetected )"
-check_ltlspec -p "G   ( v.V_TrainControl   =   L_EP   ->   X   v.V_TrainRadioModule   =   L_Sending )"
-check_ltlspec -p "G   ( v.V_TrainControl   =   L_AP   ->   X   v.V_TrainRadioModule   =   L_Sending )"
-check_ltlspec -p "G   ( v.V_TrainSensor   =   L_TrainPassed   ->   F   v.V_BarrierOpenSensor   =   L_OpenDetected )"
-check_ltlspec -p "G   ( ( X   v.V_TrainRadioModule   =   L_Sending   &   ( v.V_TrainRadioModule   =   L_Idle   |   v.V_TrainRadioModule   =   L_Receiving ) )   ->   X   X   v.V_CrossingRadio   =   L_Receiving )"
-check_ltlspec -p "G   ( ( v.V_BarrierMotor   =   L_Forward   &   X   v.V_degreeLevel   =   0 )   ->   ( F   v.V_CrossingControl   =   L_Safe   &   F   v.V_BarrierClosedSensor   =   L_ClosedDetected ) )"
-check_ltlspec -p "G   ( v.V_BarrierClosedSensor   =   L_ClosedDetected   ->   F   v.V_BarrierOpenSensor   =   L_OpenDetected )"
-check_ltlspec -p "G   ( v.V_TrainControl   =   L_BEP   ->   ( v.V_Brake   =   L_BrakeActive   |   v.V_BarrierClosedSensor   =   L_ClosedDetected ) )"
-check_ltlspec -p "G   ( v.V_CrossingControl   =   L_Closing   ->   F   v.V_CrossingControl   =   L_Safe )"
-check_ltlspec -p "G   ( ( v.V_TrainControl   =   L_BEP   &   v.V_CrossingControl   !=   L_Safe )   ->   G   v.V_position   <   0 )"
-check_ltlspec -p "G   ( v.V_Brake   =   L_BrakeActive   ->   G   v.V_Brake   =   L_BrakeActive )"
-check_ltlspec -p "G   ( v.V_Brake   =   L_BrakeActive   ->   F   v.V_velocity   =   0 )"
+check_fsm
+quit

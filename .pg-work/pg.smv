@@ -1,6 +1,15 @@
 MODULE _VARS
     VAR
+        V_TrainSensorFault : {L_No, L_Yes};
+        V_BarrierClosedSensorFault : {L_No, L_Yes};
+        V_BarrierOpenSensorFault : {L_No, L_Yes};
+        V_TrainRadioFault : {L_No, L_Yes};
+        V_CrossingRadioFault : {L_No, L_Yes};
+        V_RadioInterferenceFault : {L_No, L_Yes};
+        V_BarrierMotorFault : {L_No, L_Yes};
+        V_BrakeFault : {L_No, L_Yes};
         V_Odometer : {L_Measuring};
+        V_RadioChannel : {L_Acknowledgment, L_StartSavingMessage, L_Empty};
         V_Brake : {L_BrakeInactive, L_BrakeActive};
         V_TrainControl : {L_SP, L_GP, L_NBEP, L_BEP, L_AP, L_EP, L_BeforeEP};
         V_TrainRadioModule : {L_Receiving, L_Sending, L_Idle};
@@ -13,36 +22,146 @@ MODULE _VARS
         V_BarrierOpenSensor : {L_OpenNotDetected, L_OpenDetected};
         V_BarrierMotor : {L_Backward, L_Forward, L_Idle};
         V_velocity_m : 0..44;
-        V_position_m : -3000..500;
+        V_position_m : -2000..500;
         V_gp : {0};
         V_z : {3};
         V_a : {10};
         V_c : {5};
+        V_counter : {0, 1, 2};
         V_velocity : 0..44;
-        V_position : -3000..500;
+        V_position : -2000..500;
         V_degreeLevel : 0..6;
         V_endOfCrossingPos : {40};
         V_time : 0..500;
         V_t : {30};
 
+MODULE _P_TrainSensorFault(v)
+    INIT
+        v.V_TrainSensorFault   =   L_No
+    TRANS
+        ( ( v.V_TrainSensorFault = L_No ) & ( next(v.V_TrainSensorFault) = L_No ) ) | 
+        ( ( v.V_TrainSensorFault = L_No ) & ( next(v.V_TrainSensorFault) = L_Yes ) ) | 
+        ( ( v.V_TrainSensorFault = L_Yes ) & ( next(v.V_TrainSensorFault) = L_No ) ) | 
+        ( ( v.V_TrainSensorFault = L_Yes ) & ( next(v.V_TrainSensorFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_TrainSensorFault = L_No ) | 
+        	( v.V_TrainSensorFault = L_No ) | 
+        	( v.V_TrainSensorFault = L_Yes ) | 
+        	( v.V_TrainSensorFault = L_Yes ))
+        	 & next(v.V_TrainSensorFault) = v.V_TrainSensorFault);
+
+MODULE _P_BarrierClosedSensorFault(v)
+    INIT
+        v.V_BarrierClosedSensorFault   =   L_No
+    TRANS
+        ( ( v.V_BarrierClosedSensorFault = L_No ) & ( next(v.V_BarrierClosedSensorFault) = L_No ) ) | 
+        ( ( v.V_BarrierClosedSensorFault = L_No ) & ( next(v.V_BarrierClosedSensorFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_BarrierClosedSensorFault = L_No ) | 
+        	( v.V_BarrierClosedSensorFault = L_No ))
+        	 & next(v.V_BarrierClosedSensorFault) = v.V_BarrierClosedSensorFault);
+
+MODULE _P_BarrierOpenSensorFault(v)
+    INIT
+        v.V_BarrierOpenSensorFault   =   L_No
+    TRANS
+        ( ( v.V_BarrierOpenSensorFault = L_No ) & ( next(v.V_BarrierOpenSensorFault) = L_No ) ) | 
+        ( ( v.V_BarrierOpenSensorFault = L_No ) & ( next(v.V_BarrierOpenSensorFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_BarrierOpenSensorFault = L_No ) | 
+        	( v.V_BarrierOpenSensorFault = L_No ))
+        	 & next(v.V_BarrierOpenSensorFault) = v.V_BarrierOpenSensorFault);
+
+MODULE _P_TrainRadioFault(v)
+    INIT
+        v.V_TrainRadioFault   =   L_No
+    TRANS
+        ( ( v.V_TrainRadioFault = L_No ) & ( next(v.V_TrainRadioFault) = L_No ) ) | 
+        ( ( v.V_TrainRadioFault = L_No ) & ( next(v.V_TrainRadioFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_TrainRadioFault = L_No ) | 
+        	( v.V_TrainRadioFault = L_No ))
+        	 & next(v.V_TrainRadioFault) = v.V_TrainRadioFault);
+
+MODULE _P_CrossingRadioFault(v)
+    INIT
+        v.V_CrossingRadioFault   =   L_No
+    TRANS
+        ( ( v.V_CrossingRadioFault = L_No ) & ( next(v.V_CrossingRadioFault) = L_No ) ) | 
+        ( ( v.V_CrossingRadioFault = L_No ) & ( next(v.V_CrossingRadioFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_CrossingRadioFault = L_No ) | 
+        	( v.V_CrossingRadioFault = L_No ))
+        	 & next(v.V_CrossingRadioFault) = v.V_CrossingRadioFault);
+
+MODULE _P_RadioInterferenceFault(v)
+    INIT
+        v.V_RadioInterferenceFault   =   L_No
+    TRANS
+        ( ( v.V_RadioInterferenceFault = L_No ) & ( next(v.V_RadioInterferenceFault) = L_No ) ) | 
+        ( ( v.V_RadioInterferenceFault = L_No ) & ( next(v.V_RadioInterferenceFault) = L_Yes ) ) | 
+        ( ( v.V_RadioInterferenceFault = L_Yes ) & ( next(v.V_RadioInterferenceFault) = L_No ) ) | 
+        ( ( v.V_RadioInterferenceFault = L_Yes ) & ( next(v.V_RadioInterferenceFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_RadioInterferenceFault = L_No ) | 
+        	( v.V_RadioInterferenceFault = L_No ) | 
+        	( v.V_RadioInterferenceFault = L_Yes ) | 
+        	( v.V_RadioInterferenceFault = L_Yes ))
+        	 & next(v.V_RadioInterferenceFault) = v.V_RadioInterferenceFault);
+
+MODULE _P_BarrierMotorFault(v)
+    INIT
+        v.V_BarrierMotorFault   =   L_No
+    TRANS
+        ( ( v.V_BarrierMotorFault = L_No ) & ( next(v.V_BarrierMotorFault) = L_No ) ) | 
+        ( ( v.V_BarrierMotorFault = L_No ) & ( next(v.V_BarrierMotorFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_BarrierMotorFault = L_No ) | 
+        	( v.V_BarrierMotorFault = L_No ))
+        	 & next(v.V_BarrierMotorFault) = v.V_BarrierMotorFault);
+
+MODULE _P_BrakeFault(v)
+    INIT
+        v.V_BrakeFault   =   L_No
+    TRANS
+        ( ( v.V_BrakeFault = L_No ) & ( next(v.V_BrakeFault) = L_No ) ) | 
+        ( ( v.V_BrakeFault = L_No ) & ( next(v.V_BrakeFault) = L_Yes ) ) | 
+        (!(
+        	( v.V_BrakeFault = L_No ) | 
+        	( v.V_BrakeFault = L_No ))
+        	 & next(v.V_BrakeFault) = v.V_BrakeFault);
+
 MODULE _P_Odometer(v)
     INIT
-        ( v.V_Odometer   =   L_Measuring   &   ( v.V_velocity_m   =   44   &   v.V_position_m   =   -3000 ) )
+        ( v.V_Odometer   =   L_Measuring   &   ( v.V_velocity_m   =   30   &   v.V_position_m   =   -1000 ) )
     TRANS
-        ( ( v.V_Odometer = L_Measuring ) & ( next(v.V_Odometer) = L_Measuring ) & ( v.V_position   >=   -3000   &   v.V_position   <=   500 ) & ( next(v.V_velocity_m) = v.V_velocity & next(v.V_position_m) = v.V_position ) ) | 
+        ( ( v.V_Odometer = L_Measuring ) & ( next(v.V_Odometer) = L_Measuring ) & ( v.V_position   >=   -2000   &   v.V_position   <=   500 ) & ( next(v.V_velocity_m) = v.V_velocity & next(v.V_position_m) = v.V_position ) ) | 
         (!(
-        	( v.V_Odometer = L_Measuring ) & ( v.V_position   >=   -3000   &   v.V_position   <=   500 ))
+        	( v.V_Odometer = L_Measuring ) & ( v.V_position   >=   -2000   &   v.V_position   <=   500 ))
         	 & next(v.V_Odometer) = v.V_Odometer & next(v.V_velocity_m) = v.V_velocity_m & next(v.V_position_m) = v.V_position_m);
+
+MODULE _P_RadioChannel(v)
+    INIT
+        v.V_RadioChannel   =   L_Empty
+    TRANS
+        ( ( v.V_RadioChannel = L_StartSavingMessage ) & ( next(v.V_RadioChannel) = L_Empty ) & ( v.V_CrossingRadioFault   !=   L_No ) ) | 
+        ( ( v.V_RadioChannel = L_Empty ) & ( next(v.V_RadioChannel) = L_Acknowledgment ) & ( ( v.V_CrossingRadio   =   L_Sending   &   v.V_RadioInterferenceFault   =   L_No ) ) ) | 
+        ( ( v.V_RadioChannel = L_StartSavingMessage ) & ( next(v.V_RadioChannel) = L_Empty ) & ( ( v.V_CrossingRadio   =   L_Receiving   &   v.V_RadioInterferenceFault   =   L_No ) ) ) | 
+        ( ( v.V_RadioChannel = L_Empty ) & ( next(v.V_RadioChannel) = L_StartSavingMessage ) & ( ( v.V_TrainRadioModule   =   L_Sending   &   v.V_RadioInterferenceFault   =   L_No ) ) ) | 
+        (!(
+        	( v.V_RadioChannel = L_StartSavingMessage ) & ( v.V_CrossingRadioFault   !=   L_No ) | 
+        	( v.V_RadioChannel = L_Empty ) & ( ( v.V_CrossingRadio   =   L_Sending   &   v.V_RadioInterferenceFault   =   L_No ) ) | 
+        	( v.V_RadioChannel = L_StartSavingMessage ) & ( ( v.V_CrossingRadio   =   L_Receiving   &   v.V_RadioInterferenceFault   =   L_No ) ) | 
+        	( v.V_RadioChannel = L_Empty ) & ( ( v.V_TrainRadioModule   =   L_Sending   &   v.V_RadioInterferenceFault   =   L_No ) ))
+        	 & next(v.V_RadioChannel) = v.V_RadioChannel);
 
 MODULE _P_Brake(v)
     INIT
         v.V_Brake   =   L_BrakeInactive
     TRANS
-        ( ( v.V_Brake = L_BrakeActive ) & ( next(v.V_Brake) = L_BrakeActive ) & ( v.V_TrainControl   =   L_NBEP ) ) | 
-        ( ( v.V_Brake = L_BrakeInactive ) & ( next(v.V_Brake) = L_BrakeActive ) & ( v.V_TrainControl   =   L_NBEP ) ) | 
+        ( ( v.V_Brake = L_BrakeInactive ) & ( next(v.V_Brake) = L_BrakeActive ) & ( ( v.V_TrainControl   =   L_NBEP   &   v.V_BrakeFault   =   L_No ) ) ) | 
         (!(
-        	( v.V_Brake = L_BrakeActive ) & ( v.V_TrainControl   =   L_NBEP ) | 
-        	( v.V_Brake = L_BrakeInactive ) & ( v.V_TrainControl   =   L_NBEP ))
+        	( v.V_Brake = L_BrakeInactive ) & ( ( v.V_TrainControl   =   L_NBEP   &   v.V_BrakeFault   =   L_No ) ))
         	 & next(v.V_Brake) = v.V_Brake);
 
 MODULE _P_TrainControl(v)
@@ -50,14 +169,14 @@ MODULE _P_TrainControl(v)
         ( v.V_TrainControl   =   L_BeforeEP   &   ( ( ( v.V_c   =   5   &   v.V_a   =   10 )   &   v.V_z   =   3 )   &   v.V_gp   =   0 ) )
     TRANS
         ( ( v.V_TrainControl = L_GP ) & ( next(v.V_TrainControl) = L_SP ) & ( v.V_TrainSensor   =   L_TrainPassed ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
-        ( ( v.V_TrainControl = L_BEP ) & ( next(v.V_TrainControl) = L_GP ) & ( ( v.V_position_m   >   0   &   v.V_position_m   <   v.V_endOfCrossingPos ) ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
+        ( ( v.V_TrainControl = L_BEP ) & ( next(v.V_TrainControl) = L_GP ) & ( ( ( v.V_position_m   >=   0   &   v.V_position_m   <   v.V_endOfCrossingPos )   &   v.V_TrainRadioModule   =   L_Receiving ) ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
         ( ( v.V_TrainControl = L_BEP ) & ( next(v.V_TrainControl) = L_NBEP ) & ( v.V_TrainRadioModule   !=   L_Receiving ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
         ( ( v.V_TrainControl = L_AP ) & ( next(v.V_TrainControl) = L_BEP ) & ( ( v.V_position_m   >   ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) )   &   v.V_position_m   <   v.V_gp ) ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
         ( ( v.V_TrainControl = L_EP ) & ( next(v.V_TrainControl) = L_AP ) & ( ( v.V_position_m   >   ( ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) )   -   ( ( 2   *   v.V_c )   *   v.V_velocity_m ) )   &   v.V_position_m   <   ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) ) ) ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
         ( ( v.V_TrainControl = L_BeforeEP ) & ( next(v.V_TrainControl) = L_EP ) & ( v.V_position_m   >   ( ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) )   -   ( v.V_velocity_m   *   ( v.V_t   +   v.V_c ) ) ) ) & ( next(v.V_gp) = v.V_gp & next(v.V_z) = v.V_z & next(v.V_a) = v.V_a & next(v.V_c) = v.V_c ) ) | 
         (!(
         	( v.V_TrainControl = L_GP ) & ( v.V_TrainSensor   =   L_TrainPassed ) | 
-        	( v.V_TrainControl = L_BEP ) & ( ( v.V_position_m   >   0   &   v.V_position_m   <   v.V_endOfCrossingPos ) ) | 
+        	( v.V_TrainControl = L_BEP ) & ( ( ( v.V_position_m   >=   0   &   v.V_position_m   <   v.V_endOfCrossingPos )   &   v.V_TrainRadioModule   =   L_Receiving ) ) | 
         	( v.V_TrainControl = L_BEP ) & ( v.V_TrainRadioModule   !=   L_Receiving ) | 
         	( v.V_TrainControl = L_AP ) & ( ( v.V_position_m   >   ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) )   &   v.V_position_m   <   v.V_gp ) ) | 
         	( v.V_TrainControl = L_EP ) & ( ( v.V_position_m   >   ( ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) )   -   ( ( 2   *   v.V_c )   *   v.V_velocity_m ) )   &   v.V_position_m   <   ( ( 0   -   v.V_z )   -   ( ( v.V_velocity_m   *   v.V_velocity_m )   /   ( 2   *   v.V_a ) ) ) ) ) | 
@@ -66,39 +185,47 @@ MODULE _P_TrainControl(v)
 
 MODULE _P_TrainRadioModule(v)
     INIT
-        v.V_TrainRadioModule   =   L_Idle
+        ( v.V_TrainRadioModule   =   L_Idle   &   v.V_counter   =   0 )
     TRANS
-        ( ( v.V_TrainRadioModule = L_Sending ) & ( next(v.V_TrainRadioModule) = L_Receiving ) & ( v.V_CrossingRadio   =   L_Sending ) ) | 
-        ( ( v.V_TrainRadioModule = L_Sending ) & ( next(v.V_TrainRadioModule) = L_Sending ) & ( v.V_TrainControl   =   L_AP ) ) | 
-        ( ( v.V_TrainRadioModule = L_Idle ) & ( next(v.V_TrainRadioModule) = L_Sending ) & ( v.V_TrainControl   =   L_EP ) ) | 
+        ( ( v.V_TrainRadioModule = L_Receiving ) & ( next(v.V_TrainRadioModule) = L_Idle ) & ( v.V_TrainRadioFault   !=   L_No ) & ( next(v.V_counter) = v.V_counter ) ) | 
+        ( ( v.V_TrainRadioModule = L_Sending ) & ( next(v.V_TrainRadioModule) = L_Idle ) & ( v.V_TrainRadioFault   !=   L_No ) & ( next(v.V_counter) = v.V_counter ) ) | 
+        ( ( v.V_TrainRadioModule = L_Idle ) & ( next(v.V_TrainRadioModule) = L_Receiving ) & ( ( ( ( v.V_RadioChannel   =   L_Acknowledgment   &   v.V_TrainControl   =   L_AP )   &   v.V_counter   =   2 )   &   v.V_TrainRadioFault   =   L_No ) ) & ( next(v.V_counter) = v.V_counter ) ) | 
+        ( ( v.V_TrainRadioModule = L_Sending ) & ( next(v.V_TrainRadioModule) = L_Idle ) & ( ( v.V_RadioChannel   =   L_StartSavingMessage   |   ( v.V_RadioChannel   =   L_Acknowledgment   &   v.V_TrainRadioFault   =   L_No ) ) ) & ( next(v.V_counter) = v.V_counter ) ) | 
+        ( ( v.V_TrainRadioModule = L_Idle ) & ( next(v.V_TrainRadioModule) = L_Sending ) & ( ( v.V_counter   +   1 )   >=   0   &   ( v.V_counter   +   1 )   <=   2 ) & ( ( ( v.V_TrainControl   =   L_EP   &   v.V_counter   =   0 )   |   ( ( v.V_TrainControl   =   L_AP   &   v.V_counter   =   1 )   &   v.V_TrainRadioFault   =   L_No ) ) ) & ( next(v.V_counter) = ( v.V_counter   +   1 ) ) ) | 
         (!(
-        	( v.V_TrainRadioModule = L_Sending ) & ( v.V_CrossingRadio   =   L_Sending ) | 
-        	( v.V_TrainRadioModule = L_Sending ) & ( v.V_TrainControl   =   L_AP ) | 
-        	( v.V_TrainRadioModule = L_Idle ) & ( v.V_TrainControl   =   L_EP ))
-        	 & next(v.V_TrainRadioModule) = v.V_TrainRadioModule);
+        	( v.V_TrainRadioModule = L_Receiving ) & ( v.V_TrainRadioFault   !=   L_No ) | 
+        	( v.V_TrainRadioModule = L_Sending ) & ( v.V_TrainRadioFault   !=   L_No ) | 
+        	( v.V_TrainRadioModule = L_Idle ) & ( ( ( ( v.V_RadioChannel   =   L_Acknowledgment   &   v.V_TrainControl   =   L_AP )   &   v.V_counter   =   2 )   &   v.V_TrainRadioFault   =   L_No ) ) | 
+        	( v.V_TrainRadioModule = L_Sending ) & ( ( v.V_RadioChannel   =   L_StartSavingMessage   |   ( v.V_RadioChannel   =   L_Acknowledgment   &   v.V_TrainRadioFault   =   L_No ) ) ) | 
+        	( v.V_TrainRadioModule = L_Idle ) & ( ( v.V_counter   +   1 )   >=   0   &   ( v.V_counter   +   1 )   <=   2 ) & ( ( ( v.V_TrainControl   =   L_EP   &   v.V_counter   =   0 )   |   ( ( v.V_TrainControl   =   L_AP   &   v.V_counter   =   1 )   &   v.V_TrainRadioFault   =   L_No ) ) ))
+        	 & next(v.V_TrainRadioModule) = v.V_TrainRadioModule & next(v.V_counter) = v.V_counter);
 
 MODULE _P_Train(v)
     INIT
-        ( v.V_Train   =   L_Drive   &   ( v.V_velocity   =   44   &   v.V_position   =   -3000 ) )
+        ( v.V_Train   =   L_Drive   &   ( v.V_velocity   =   30   &   v.V_position   =   -2000 ) )
     TRANS
         ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( 0   >=   0   &   0   <=   44 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   <=   v.V_a ) ) & ( next(v.V_velocity) = 0 ) & ( next(v.V_position) = v.V_position ) ) | 
         ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_velocity   -   v.V_a )   >=   0   &   ( v.V_velocity   -   v.V_a )   <=   44 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   >   v.V_a ) ) & ( next(v.V_velocity) = ( v.V_velocity   -   v.V_a ) ) & ( next(v.V_position) = v.V_position ) ) | 
-        ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -3000   &   ( v.V_position   +   v.V_velocity )   <=   500 ) & ( next(v.V_position) = ( v.V_position   +   v.V_velocity ) ) & ( next(v.V_velocity) = v.V_velocity ) ) | 
+        ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -2000   &   ( v.V_position   +   v.V_velocity )   <=   500 ) & ( next(v.V_position) = ( v.V_position   +   v.V_velocity ) ) & ( next(v.V_velocity) = v.V_velocity ) ) | 
         (!(
         	( v.V_Train = L_Drive ) & ( 0   >=   0   &   0   <=   44 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   <=   v.V_a ) ) | 
         	( v.V_Train = L_Drive ) & ( ( v.V_velocity   -   v.V_a )   >=   0   &   ( v.V_velocity   -   v.V_a )   <=   44 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   >   v.V_a ) ) | 
-        	( v.V_Train = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -3000   &   ( v.V_position   +   v.V_velocity )   <=   500 ))
+        	( v.V_Train = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -2000   &   ( v.V_position   +   v.V_velocity )   <=   500 ))
         	 & next(v.V_Train) = v.V_Train & next(v.V_velocity) = v.V_velocity & next(v.V_position) = v.V_position);
 
 MODULE _P_CrossingRadio(v)
     INIT
         v.V_CrossingRadio   =   L_Idle
     TRANS
-        ( ( v.V_CrossingRadio = L_Receiving ) & ( next(v.V_CrossingRadio) = L_Sending ) & ( v.V_CrossingControl   =   L_Safe ) ) | 
-        ( ( v.V_CrossingRadio = L_Idle ) & ( next(v.V_CrossingRadio) = L_Receiving ) & ( v.V_TrainRadioModule   =   L_Sending ) ) | 
+        ( ( v.V_CrossingRadio = L_Receiving ) & ( next(v.V_CrossingRadio) = L_Idle ) & ( v.V_CrossingRadioFault   !=   L_No ) ) | 
+        ( ( v.V_CrossingRadio = L_Idle ) & ( next(v.V_CrossingRadio) = L_Sending ) & ( ( v.V_CrossingControl   =   L_Safe   &   v.V_CrossingRadioFault   =   L_No ) ) ) | 
+        ( ( v.V_CrossingRadio = L_Receiving ) & ( next(v.V_CrossingRadio) = L_Idle ) & ( v.V_RadioChannel   =   L_Empty ) ) | 
+        ( ( v.V_CrossingRadio = L_Idle ) & ( next(v.V_CrossingRadio) = L_Receiving ) & ( ( v.V_RadioChannel   =   L_StartSavingMessage   &   v.V_CrossingRadioFault   =   L_No ) ) ) | 
         (!(
-        	( v.V_CrossingRadio = L_Receiving ) & ( v.V_CrossingControl   =   L_Safe ) | 
-        	( v.V_CrossingRadio = L_Idle ) & ( v.V_TrainRadioModule   =   L_Sending ))
+        	( v.V_CrossingRadio = L_Receiving ) & ( v.V_CrossingRadioFault   !=   L_No ) | 
+        	( v.V_CrossingRadio = L_Idle ) & ( ( v.V_CrossingControl   =   L_Safe   &   v.V_CrossingRadioFault   =   L_No ) ) | 
+        	( v.V_CrossingRadio = L_Receiving ) & ( v.V_RadioChannel   =   L_Empty ) | 
+        	( v.V_CrossingRadio = L_Idle ) & ( ( v.V_RadioChannel   =   L_StartSavingMessage   &   v.V_CrossingRadioFault   =   L_No ) ))
         	 & next(v.V_CrossingRadio) = v.V_CrossingRadio);
 
 MODULE _P_Barrier(v)
@@ -116,24 +243,30 @@ MODULE _P_BarrierClosedSensor(v)
     INIT
         v.V_BarrierClosedSensor   =   L_ClosedNotDetected
     TRANS
-        ( ( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedDetected ) & ( v.V_degreeLevel   =   0 ) ) | 
-        ( ( v.V_BarrierClosedSensor = L_ClosedDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedNotDetected ) & ( v.V_degreeLevel   !=   0 ) ) | 
+        ( ( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedDetected ) & ( v.V_BarrierClosedSensorFault   !=   L_No ) ) | 
+        ( ( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedDetected ) & ( ( v.V_degreeLevel   =   0   &   v.V_BarrierClosedSensorFault   =   L_No ) ) ) | 
+        ( ( v.V_BarrierClosedSensor = L_ClosedDetected ) & ( next(v.V_BarrierClosedSensor) = L_ClosedNotDetected ) & ( ( v.V_degreeLevel   !=   0   &   v.V_BarrierClosedSensorFault   =   L_No ) ) ) | 
         (!(
-        	( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( v.V_degreeLevel   =   0 ) | 
-        	( v.V_BarrierClosedSensor = L_ClosedDetected ) & ( v.V_degreeLevel   !=   0 ))
+        	( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( v.V_BarrierClosedSensorFault   !=   L_No ) | 
+        	( v.V_BarrierClosedSensor = L_ClosedNotDetected ) & ( ( v.V_degreeLevel   =   0   &   v.V_BarrierClosedSensorFault   =   L_No ) ) | 
+        	( v.V_BarrierClosedSensor = L_ClosedDetected ) & ( ( v.V_degreeLevel   !=   0   &   v.V_BarrierClosedSensorFault   =   L_No ) ))
         	 & next(v.V_BarrierClosedSensor) = v.V_BarrierClosedSensor);
 
 MODULE _P_TrainSensor(v)
     INIT
         ( v.V_TrainSensor   =   L_TrainNotPassed   &   ( v.V_time   =   0   &   v.V_endOfCrossingPos   =   40 ) )
     TRANS
-        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_Timeout ) & ( v.V_time   =   500 ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos & next(v.V_time) = v.V_time ) ) | 
-        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainNotPassed ) & ( ( v.V_time   +   1 )   >=   0   &   ( v.V_time   +   1 )   <=   500 ) & ( v.V_CrossingControl   =   L_Safe ) & ( next(v.V_time) = ( v.V_time   +   1 ) ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos ) ) | 
-        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainPassed ) & ( 0   >=   0   &   0   <=   500 ) & ( v.V_position_m   >=   v.V_endOfCrossingPos ) & ( next(v.V_time) = 0 ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainPassed ) & ( v.V_TrainSensorFault   !=   L_No ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos & next(v.V_time) = v.V_time ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_Timeout ) & ( ( v.V_time   =   500   &   v.V_TrainSensorFault   =   L_No ) ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos & next(v.V_time) = v.V_time ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainNotPassed ) & ( ( v.V_time   +   1 )   >=   0   &   ( v.V_time   +   1 )   <=   500 ) & ( ( ( v.V_CrossingControl   =   L_Safe   &   v.V_position_m   <   v.V_endOfCrossingPos )   &   v.V_TrainSensorFault   =   L_No ) ) & ( next(v.V_time) = ( v.V_time   +   1 ) ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainPassed ) & ( 0   >=   0   &   0   <=   500 ) & ( ( v.V_position_m   >=   v.V_endOfCrossingPos   &   v.V_TrainSensorFault   =   L_No ) ) & ( next(v.V_time) = 0 ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos ) ) | 
+        ( ( v.V_TrainSensor = L_TrainNotPassed ) & ( next(v.V_TrainSensor) = L_TrainNotPassed ) & ( ( v.V_position_m   <   v.V_endOfCrossingPos   &   v.V_TrainSensorFault   =   L_No ) ) & ( next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos & next(v.V_time) = v.V_time ) ) | 
         (!(
-        	( v.V_TrainSensor = L_TrainNotPassed ) & ( v.V_time   =   500 ) | 
-        	( v.V_TrainSensor = L_TrainNotPassed ) & ( ( v.V_time   +   1 )   >=   0   &   ( v.V_time   +   1 )   <=   500 ) & ( v.V_CrossingControl   =   L_Safe ) | 
-        	( v.V_TrainSensor = L_TrainNotPassed ) & ( 0   >=   0   &   0   <=   500 ) & ( v.V_position_m   >=   v.V_endOfCrossingPos ))
+        	( v.V_TrainSensor = L_TrainNotPassed ) & ( v.V_TrainSensorFault   !=   L_No ) | 
+        	( v.V_TrainSensor = L_TrainNotPassed ) & ( ( v.V_time   =   500   &   v.V_TrainSensorFault   =   L_No ) ) | 
+        	( v.V_TrainSensor = L_TrainNotPassed ) & ( ( v.V_time   +   1 )   >=   0   &   ( v.V_time   +   1 )   <=   500 ) & ( ( ( v.V_CrossingControl   =   L_Safe   &   v.V_position_m   <   v.V_endOfCrossingPos )   &   v.V_TrainSensorFault   =   L_No ) ) | 
+        	( v.V_TrainSensor = L_TrainNotPassed ) & ( 0   >=   0   &   0   <=   500 ) & ( ( v.V_position_m   >=   v.V_endOfCrossingPos   &   v.V_TrainSensorFault   =   L_No ) ) | 
+        	( v.V_TrainSensor = L_TrainNotPassed ) & ( ( v.V_position_m   <   v.V_endOfCrossingPos   &   v.V_TrainSensorFault   =   L_No ) ))
         	 & next(v.V_TrainSensor) = v.V_TrainSensor & next(v.V_endOfCrossingPos) = v.V_endOfCrossingPos & next(v.V_time) = v.V_time);
 
 MODULE _P_CrossingControl(v)
@@ -155,32 +288,43 @@ MODULE _P_BarrierOpenSensor(v)
     INIT
         v.V_BarrierOpenSensor   =   L_OpenDetected
     TRANS
-        ( ( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenDetected ) & ( v.V_degreeLevel   =   6 ) ) | 
-        ( ( v.V_BarrierOpenSensor = L_OpenDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenNotDetected ) & ( v.V_degreeLevel   !=   6 ) ) | 
+        ( ( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenDetected ) & ( v.V_BarrierOpenSensorFault   !=   L_No ) ) | 
+        ( ( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenDetected ) & ( ( v.V_degreeLevel   =   6   &   v.V_BarrierOpenSensorFault   =   L_No ) ) ) | 
+        ( ( v.V_BarrierOpenSensor = L_OpenDetected ) & ( next(v.V_BarrierOpenSensor) = L_OpenNotDetected ) & ( ( v.V_degreeLevel   !=   6   &   v.V_BarrierOpenSensorFault   =   L_No ) ) ) | 
         (!(
-        	( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( v.V_degreeLevel   =   6 ) | 
-        	( v.V_BarrierOpenSensor = L_OpenDetected ) & ( v.V_degreeLevel   !=   6 ))
+        	( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( v.V_BarrierOpenSensorFault   !=   L_No ) | 
+        	( v.V_BarrierOpenSensor = L_OpenNotDetected ) & ( ( v.V_degreeLevel   =   6   &   v.V_BarrierOpenSensorFault   =   L_No ) ) | 
+        	( v.V_BarrierOpenSensor = L_OpenDetected ) & ( ( v.V_degreeLevel   !=   6   &   v.V_BarrierOpenSensorFault   =   L_No ) ))
         	 & next(v.V_BarrierOpenSensor) = v.V_BarrierOpenSensor);
 
 MODULE _P_BarrierMotor(v)
     INIT
         v.V_BarrierMotor   =   L_Idle
     TRANS
-        ( ( v.V_BarrierMotor = L_Backward ) & ( next(v.V_BarrierMotor) = L_Idle ) & ( v.V_CrossingControl   =   L_NotSafe ) ) | 
-        ( ( v.V_BarrierMotor = L_Idle ) & ( next(v.V_BarrierMotor) = L_Backward ) & ( v.V_CrossingControl   =   L_Opening ) ) | 
-        ( ( v.V_BarrierMotor = L_Forward ) & ( next(v.V_BarrierMotor) = L_Idle ) & ( v.V_CrossingControl   =   L_Safe ) ) | 
-        ( ( v.V_BarrierMotor = L_Idle ) & ( next(v.V_BarrierMotor) = L_Forward ) & ( v.V_CrossingControl   =   L_Closing ) ) | 
+        ( ( v.V_BarrierMotor = L_Backward ) & ( next(v.V_BarrierMotor) = L_Idle ) & ( ( v.V_CrossingControl   =   L_NotSafe   |   v.V_BarrierMotorFault   =   L_No ) ) ) | 
+        ( ( v.V_BarrierMotor = L_Idle ) & ( next(v.V_BarrierMotor) = L_Backward ) & ( ( v.V_CrossingControl   =   L_Opening   &   v.V_BarrierMotorFault   =   L_No ) ) ) | 
+        ( ( v.V_BarrierMotor = L_Forward ) & ( next(v.V_BarrierMotor) = L_Idle ) & ( ( v.V_CrossingControl   =   L_Safe   |   v.V_BarrierMotorFault   =   L_Yes ) ) ) | 
+        ( ( v.V_BarrierMotor = L_Idle ) & ( next(v.V_BarrierMotor) = L_Forward ) & ( ( v.V_CrossingControl   =   L_Closing   &   v.V_BarrierMotorFault   =   L_No ) ) ) | 
         (!(
-        	( v.V_BarrierMotor = L_Backward ) & ( v.V_CrossingControl   =   L_NotSafe ) | 
-        	( v.V_BarrierMotor = L_Idle ) & ( v.V_CrossingControl   =   L_Opening ) | 
-        	( v.V_BarrierMotor = L_Forward ) & ( v.V_CrossingControl   =   L_Safe ) | 
-        	( v.V_BarrierMotor = L_Idle ) & ( v.V_CrossingControl   =   L_Closing ))
+        	( v.V_BarrierMotor = L_Backward ) & ( ( v.V_CrossingControl   =   L_NotSafe   |   v.V_BarrierMotorFault   =   L_No ) ) | 
+        	( v.V_BarrierMotor = L_Idle ) & ( ( v.V_CrossingControl   =   L_Opening   &   v.V_BarrierMotorFault   =   L_No ) ) | 
+        	( v.V_BarrierMotor = L_Forward ) & ( ( v.V_CrossingControl   =   L_Safe   |   v.V_BarrierMotorFault   =   L_Yes ) ) | 
+        	( v.V_BarrierMotor = L_Idle ) & ( ( v.V_CrossingControl   =   L_Closing   &   v.V_BarrierMotorFault   =   L_No ) ))
         	 & next(v.V_BarrierMotor) = v.V_BarrierMotor);
 
 MODULE main
     VAR
         v : _VARS();
+        p_TrainSensorFault : _P_TrainSensorFault(v);
+        p_BarrierClosedSensorFault : _P_BarrierClosedSensorFault(v);
+        p_BarrierOpenSensorFault : _P_BarrierOpenSensorFault(v);
+        p_TrainRadioFault : _P_TrainRadioFault(v);
+        p_CrossingRadioFault : _P_CrossingRadioFault(v);
+        p_RadioInterferenceFault : _P_RadioInterferenceFault(v);
+        p_BarrierMotorFault : _P_BarrierMotorFault(v);
+        p_BrakeFault : _P_BrakeFault(v);
         p_Odometer : _P_Odometer(v);
+        p_RadioChannel : _P_RadioChannel(v);
         p_Brake : _P_Brake(v);
         p_TrainControl : _P_TrainControl(v);
         p_TrainRadioModule : _P_TrainRadioModule(v);

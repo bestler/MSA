@@ -7,11 +7,20 @@ graph CrossingRadio {
     transitions {
 
         Idle -> Receiving { 
-            guard { TrainRadioModule = Sending }
+            guard { RadioChannel = StartSavingMessage & CrossingRadioFault = No}
         }
 
-        Receiving -> Sending { 
-            guard { CrossingControl = Safe }
+        Receiving -> Idle {
+            guard { RadioChannel = Empty }
+        }
+
+        Idle -> Sending { 
+            guard { CrossingControl = Safe & CrossingRadioFault = No }
+        }
+
+        # Fehlerzustand Erweiterung
+        Receiving -> Idle {
+            guard { CrossingRadioFault != No }
         }
     }
 

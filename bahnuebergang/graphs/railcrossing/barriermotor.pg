@@ -6,20 +6,19 @@ graph BarrierMotor {
 
     transitions {
         Idle -> Forward {
-            guard { CrossingControl = Closing }
-            
+            guard { CrossingControl = Closing & BarrierMotorFault = No }            
         }
         
         Forward -> Idle {
-            guard { CrossingControl = Safe }
+            guard { CrossingControl = Safe | BarrierMotorFault = Yes }
         }
 
         Idle -> Backward {
-            guard { CrossingControl = Opening }  
+            guard { CrossingControl = Opening & BarrierMotorFault = No }  
         }
 
         Backward -> Idle {
-            guard { CrossingControl = NotSafe }
+            guard { CrossingControl = NotSafe | BarrierMotorFault = No }
         }
 
     }        

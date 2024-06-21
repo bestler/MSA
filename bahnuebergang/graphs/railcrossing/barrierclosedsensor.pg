@@ -6,12 +6,19 @@ graph BarrierClosedSensor {
 
     transitions {
         ClosedDetected -> ClosedNotDetected {
-            guard { degreeLevel != 0 }
+            guard { degreeLevel != 0 & BarrierClosedSensorFault = No}
         }
 
         ClosedNotDetected -> ClosedDetected {
-            guard { degreeLevel = 0 }
+            guard { degreeLevel = 0 & BarrierClosedSensorFault = No }
         }
+
+        ## Fehler: Meldet geschlossen, obwohl eig. nicht geschlossen
+
+        ClosedNotDetected -> ClosedDetected {
+            guard { BarrierClosedSensorFault != No }
+        }
+
     }
 
 }

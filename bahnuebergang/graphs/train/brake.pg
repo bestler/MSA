@@ -1,5 +1,7 @@
 graph Brake {
 
+    #TODO: a in Bremse einbauen
+
     states {BrakeActive, BrakeInactive}
 
     init: BrakeInactive {}
@@ -7,12 +9,12 @@ graph Brake {
     transitions {
 
         BrakeInactive -> BrakeActive {
-            guard { TrainControl = NBEP }
+            guard { TrainControl = NBEP & BrakeFault = No }
         }
 
-        BrakeActive -> BrakeActive {
-            guard { TrainControl = NBEP }
-        }
+        #BrakeActive -> BrakeActive {
+        #    guard { TrainControl = NBEP & BrakeFault = No }
+        #}
 
     }
 

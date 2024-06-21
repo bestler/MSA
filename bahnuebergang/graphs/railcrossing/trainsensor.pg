@@ -11,22 +11,31 @@ graph TrainSensor {
 
     transitions {
 
+        TrainNotPassed -> TrainNotPassed {
+            guard { position_m < endOfCrossingPos & TrainSensorFault = No}
+        }
+
         TrainNotPassed -> TrainPassed {
-            guard {position_m >= endOfCrossingPos }
+            guard {position_m >= endOfCrossingPos & TrainSensorFault = No }
             action {
                 time:= 0
             }
         }
 
         TrainNotPassed -> TrainNotPassed {
-            guard {CrossingControl = Safe}
+            guard {CrossingControl = Safe & position_m < endOfCrossingPos & TrainSensorFault = No }
             action {
                 time:= time + 1
             }
         }
 
         TrainNotPassed -> Timeout {
-            guard {time = 500}
+            guard {time = 500 & TrainSensorFault = No}
+        }
+
+        # Fehler: Fehldetektion
+        TrainNotPassed -> TrainPassed {
+            guard { TrainSensorFault != No }
         }
 
     }

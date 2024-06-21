@@ -1,75 +1,95 @@
 model Bahnuebergang {
+
+    faults {
+        persistent BrakeFault
+        #persistent HodometerFault
+        persistent BarrierMotorFault
+        transient RadioInterferenceFault
+        persistent CrossingRadioFault
+        persistent TrainRadioFault
+        persistent BarrierOpenSensorFault # Meldet offen, obwohl nicht offen ist
+        persistent BarrierClosedSensorFault  # Meldet geschlossen, obwohl nicht geschlossen ist
+        transient TrainSensorFault # Fehldektektion: Zug wird als passiert erkannt, obwohl er es nicht ist
+    }
+
+    hazards {
+        "Zug ungesichert auf Bahnuebergang" {
+            TrainControl = GP & CrossingControl != Safe
+        }
+    }
     
     specify {
         "Wenn die Bremse aktiv ist, ist die Geschwindigkeit irgendwann 0" {
-            G (Brake = BrakeActive => F (velocity = 0))
+            G nofaults => G (Brake = BrakeActive => F (velocity = 0))
         }
 
         "Wenn die Bremse aktiviert wurde, bleibt sie aktiv" {
-            G (Brake = BrakeActive => G (Brake = BrakeActive))
+            G nofaults => G (Brake = BrakeActive => G (Brake = BrakeActive))
         }
 
         "Wenn der Bahnübergang nicht gesichert ist, kommt der Zug vor dem Gefahrenpunkt zum stehen" {
-            G ((CrossingControl != Safe & TrainControl = BEP) => G (position < 0))
+            G nofaults => G ((CrossingControl != Safe & TrainControl = BEP) => G (position < 0))
         }
 
         "Nach dem Schließen ist der Bahnübergang gesichert" {
-            G (CrossingControl = Closing => F (CrossingControl = Safe))
+            G nofaults => G (CrossingControl = Closing => F (CrossingControl = Safe))
         }
 
         "Wenn wir am Bremseinsatzpunkt sind, ist entweder der Übergang gesichert oder die Bremse aktiv" {
-            G (TrainControl = BEP => (Brake = BrakeActive | BarrierClosedSensor = ClosedDetected))
+            G nofaults => G (TrainControl = BEP => (Brake = BrakeActive | BarrierClosedSensor = ClosedDetected))
         }
 
         "Wenn die Schranke geschlossen ist, ist sie irgendwann wieder offen" {
-            G (BarrierClosedSensor = ClosedDetected => F (BarrierOpenSensor = OpenDetected))
+            G nofaults => G (BarrierClosedSensor = ClosedDetected => F (BarrierOpenSensor = OpenDetected))
         }
 
         "Wenn der Winkel bei 0 ist, ist die Anlage gesichert" {
-            G ( X (degreeLevel = 0) & (BarrierMotor = Forward) => F (BarrierClosedSensor = ClosedDetected) & F (CrossingControl = Safe))
-        }
-
-        "Wenn der Zug sendet, dann empfängt die Übergangssteuerung das Signal im nächsten Schritt" {
-            G (((TrainRadioModule = Idle | TrainRadioModule = Receiving) & X (TrainRadioModule = Sending)) => X X  (CrossingRadio = Receiving))
+            G nofaults => G ( X (degreeLevel = 0) & (BarrierMotor = Forward) => F (BarrierClosedSensor = ClosedDetected) & F (CrossingControl = Safe))
         }
 
         "Wenn der Zug den Sensor passiert hat, wird die Schranke geöffnet" {
-            G (TrainSensor = TrainPassed => F (BarrierOpenSensor = OpenDetected))
+            G nofaults => G (TrainSensor = TrainPassed => F (BarrierOpenSensor = OpenDetected))
         }
 
         "Der Zug schickt eine Nachricht, wenn er an AP angekommen ist" {
-            G (TrainControl = AP => X (TrainRadioModule = Sending))
+            G nofaults => F (TrainControl = AP => X (TrainRadioModule = Sending))
         }
 
         "Der Zug schickt eine Nachricht, wenn er an EP angekommen ist" {
-            G (TrainControl = EP => X (TrainRadioModule = Sending))
+            G nofaults => F (TrainControl = EP => X (TrainRadioModule = Sending))
         }
 
         "Wenn die Schranke ein Level vor geschlossen ist und geschlossen wird, ist sie im nächsten Schritt geschlossen" {
-            G (degreeLevel = 1 & CrossingControl = Closing => X X (BarrierClosedSensor = ClosedDetected))
+            G nofaults => G (degreeLevel = 1 & CrossingControl = Closing => X X (BarrierClosedSensor = ClosedDetected))
         }
 
         "Wenn die Schranke nciht bei 0 Grad ist, dann erkennt der Sensor, dass die Schranke nicht geschlossen ist" {
-            G (degreeLevel != 0 => BarrierClosedSensor = ClosedNotDetected | X (BarrierClosedSensor = ClosedNotDetected))
+            G nofaults => G (degreeLevel != 0 => BarrierClosedSensor = ClosedNotDetected | X (BarrierClosedSensor = ClosedNotDetected))
         }
 
         "Der Schranken-Motor ist so lange aktiv, bis die Anlage geschlossen ist" {
-            G( (BarrierMotor = Forward) => BarrierMotor = Forward U BarrierClosedSensor = ClosedDetected)
+            G nofaults => G( (BarrierMotor = Forward) => BarrierMotor = Forward U BarrierClosedSensor = ClosedDetected)
         }
 
         "Die Position der Schranke ist nie außerhalb des definierten Bereichs (Winkelbereich 0-6) " {
-            G (degreeLevel >= 0 | degreeLevel <= 6)
+            G nofaults => G (degreeLevel >= 0 | degreeLevel <= 6)
         }
 
         "Der Hodometer hat immer die aktuelle Geschwindigkeit des Zugs" {
             # Es dauert ein Takt, bis der Hodometer die aktuelle Geschwindigkeit hat
-            G (velocity - velocity_m <= a)
+            G nofaults => G (velocity - velocity_m <= a)
         }
 
         "Der Zug muss nie eine Notbremsung durchführen" {
-            G (TrainControl != NBEP)
+            G nofaults => G (TrainControl != NBEP)
         }
 
+        "Der Zug ist nie ungesichert auf den Bahübergang" {
+            G nofaults => G !(TrainControl = GP & CrossingControl != Safe )
+        }
 
+        "Test" {
+            G ((BrakeFault = Yes) & BarrierMotorFault = Yes) => G !(TrainControl = GP & CrossingControl != Safe )
+        }
     }
 }

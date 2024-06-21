@@ -6,12 +6,20 @@ graph BarrierOpenSensor {
 
     transitions {
         OpenDetected -> OpenNotDetected {
-            guard { degreeLevel != 6}
+            guard { degreeLevel != 6 & BarrierOpenSensorFault = No}
         }
 
         OpenNotDetected -> OpenDetected {
-            guard { degreeLevel = 6 }
+            guard { degreeLevel = 6 & BarrierOpenSensorFault = No}
         }
+
+        # Fehler: Meldet offen, obwohl nicht offen
+
+        OpenNotDetected -> OpenDetected {
+            guard { BarrierOpenSensorFault != No }
+        }
+
+
     }
 
 }

@@ -14,7 +14,7 @@ graph TrainControl {
         a = 10 &
         z = 3 &
         gp = 0
-        }
+    }
 
     transitions {
 
@@ -35,12 +35,11 @@ graph TrainControl {
         }
 
         BEP -> GP {
-            guard { position_m > 0 & position_m < endOfCrossingPos }
+            guard { position_m >= 0 & position_m < endOfCrossingPos & TrainRadioModule = Receiving }
         }
 
         GP -> SP {
             guard { TrainSensor = TrainPassed }
         }
-
     }
 }

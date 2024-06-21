@@ -1,0 +1,28 @@
+graph RadioChannel {
+
+    states { Empty, StartSavingMessage, Acknowledgment }
+
+    init:  Empty {}
+
+    transitions {
+
+        Empty -> StartSavingMessage {
+            guard { TrainRadioModule = Sending & RadioInterferenceFault = No }
+        }
+
+        StartSavingMessage -> Empty {
+            guard { CrossingRadio = Receiving & RadioInterferenceFault = No}
+        }
+
+        Empty -> Acknowledgment {
+            guard { CrossingRadio = Sending & RadioInterferenceFault = No }
+        }
+
+        # Fehlerzustand
+
+        StartSavingMessage -> Empty {
+            guard { CrossingRadioFault != No }
+        }
+
+    }
+}

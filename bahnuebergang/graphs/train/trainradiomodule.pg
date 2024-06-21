@@ -1,20 +1,34 @@
 graph TrainRadioModule {
 
+    vars {
+        int counter [0..2]
+    }
+
     states {Idle, Sending, Receiving}
 
-    init: Idle{ }
+    init: Idle{ counter = 0 }
 
     transitions {
         Idle -> Sending {
-            guard { TrainControl = EP }
+            guard { (TrainControl = EP & counter = 0) | (TrainControl = AP & counter = 1) & TrainRadioFault = No }
+            action { counter := counter + 1 }
         }
 
-        Sending -> Sending {
-            guard { TrainControl = AP }
+        Sending -> Idle {
+            guard { RadioChannel = StartSavingMessage | RadioChannel = Acknowledgment & TrainRadioFault = No }
         }
 
-        Sending -> Receiving {
-            guard { CrossingRadio = Sending }
+        Idle -> Receiving {
+            guard { RadioChannel = Acknowledgment & TrainControl = AP & counter = 2 & TrainRadioFault = No }
+        }
+
+        ## Fehlerzustände
+        Sending -> Idle {
+            guard { TrainRadioFault != No }
+        }
+
+        Receiving -> Idle {
+            guard { TrainRadioFault != No }
         }
 
     }
