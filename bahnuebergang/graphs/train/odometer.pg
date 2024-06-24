@@ -1,18 +1,18 @@
 graph Odometer {
 
     vars {
-        int position_m [-2000..500]
-        int velocity_m [0..44]
+        int position_m [-200..50]
+        int velocity_m [0..5]
     }
 
-    states {Measuring}
+    states {Measuring, NotMesuaring}
 
-    init: Measuring { velocity_m = 30 & position_m = -1000}
+    init: Measuring { velocity_m = 5 & position_m = -200}
 
     transitions {
 
         Measuring -> Measuring {
-
+            guard { HodometerFault = No }
             action {
                 position_m := position;
                 velocity_m := velocity

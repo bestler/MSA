@@ -16,6 +16,12 @@ graph Brake {
         #    guard { TrainControl = NBEP & BrakeFault = No }
         #}
 
+        ## Fehler: Bremse funktioniert nicht mehr
+
+        BrakeActive -> BrakeInactive {
+            guard { BrakeFault != No }
+        }
+
     }
 
 }

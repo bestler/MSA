@@ -2,8 +2,8 @@ graph TrainControl {
 
     vars {
         int c [5..5]
-        int a [10..10]
-        int z [3..3]
+        int a [1..1]
+        int z [20..20]
         int gp [0..0]
     }
 
@@ -11,8 +11,8 @@ graph TrainControl {
 
     init: BeforeEP {
         c = 5 & 
-        a = 10 &
-        z = 3 &
+        a = 1 &
+        z = 20 &
         gp = 0
     }
 
@@ -31,11 +31,15 @@ graph TrainControl {
         }
 
         BEP -> NBEP {
-            guard { TrainRadioModule != Receiving }
+            guard { TrainRadioModule != Receiving & position_m < gp & position_m > (0 - z - ((velocity_m * velocity_m) / (2 * a)) )}
         }
 
         BEP -> GP {
             guard { position_m >= 0 & position_m < endOfCrossingPos & TrainRadioModule = Receiving }
+        }
+
+        NBEP -> GP {
+            guard { position_m >= 0 & position_m < endOfCrossingPos }
         }
 
         GP -> SP {

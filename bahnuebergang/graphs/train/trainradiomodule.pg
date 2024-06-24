@@ -10,12 +10,12 @@ graph TrainRadioModule {
 
     transitions {
         Idle -> Sending {
-            guard { (TrainControl = EP & counter = 0) | (TrainControl = AP & counter = 1) & TrainRadioFault = No }
+            guard { ((TrainControl = EP & counter = 0) | (TrainControl = AP & counter = 1)) & TrainRadioFault = No }
             action { counter := counter + 1 }
         }
 
         Sending -> Idle {
-            guard { RadioChannel = StartSavingMessage | RadioChannel = Acknowledgment & TrainRadioFault = No }
+            guard { (RadioChannel = StartSavingMessage | RadioChannel = Acknowledgment) & TrainRadioFault = No }
         }
 
         Idle -> Receiving {

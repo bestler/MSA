@@ -10,7 +10,7 @@ graph BarrierMotor {
         }
         
         Forward -> Idle {
-            guard { CrossingControl = Safe | BarrierMotorFault = Yes }
+            guard { CrossingControl = Safe }
         }
 
         Idle -> Backward {
@@ -18,7 +18,16 @@ graph BarrierMotor {
         }
 
         Backward -> Idle {
-            guard { CrossingControl = NotSafe | BarrierMotorFault = No }
+            guard { CrossingControl = NotSafe }
+        }
+
+        ## Fehler: Motor schaltet ab
+        Forward -> Idle {
+            guard { BarrierMotorFault != No }
+        }
+
+        Backward -> Idle {
+            guard { BarrierMotorFault != No }
         }
 
     }        

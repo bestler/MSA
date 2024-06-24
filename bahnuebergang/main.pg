@@ -1,12 +1,12 @@
 model Bahnuebergang {
 
     faults {
-        persistent BrakeFault
-        #persistent HodometerFault
-        persistent BarrierMotorFault
-        transient RadioInterferenceFault
-        persistent CrossingRadioFault
-        persistent TrainRadioFault
+        persistent BrakeFault # Bremse fällt aus
+        persistent HodometerFault # Hodometer misst Position und Geschwindigkeit nicht mehr
+        persistent BarrierMotorFault # Schrankenmotor fällt aus
+        transient RadioInterferenceFault # Die Nachrichten der Funkkommunikation gehen verloren
+        persistent CrossingRadioFault # Das Übergangsfunkmodul sendet und empfängt nicht
+        persistent TrainRadioFault # Das Zugfunkmodul sendet und empfängt nicht 
         persistent BarrierOpenSensorFault # Meldet offen, obwohl nicht offen ist
         persistent BarrierClosedSensorFault  # Meldet geschlossen, obwohl nicht geschlossen ist
         transient TrainSensorFault # Fehldektektion: Zug wird als passiert erkannt, obwohl er es nicht ist
@@ -14,7 +14,10 @@ model Bahnuebergang {
 
     hazards {
         "Zug ungesichert auf Bahnuebergang" {
-            TrainControl = GP & CrossingControl != Safe
+            position >= 0 & position < endOfCrossingPos & degreeLevel != 0
+        }
+        "Zug muss eine Notbremsung ausführen" {
+            TrainControl = NBEP
         }
     }
     
@@ -88,8 +91,5 @@ model Bahnuebergang {
             G nofaults => G !(TrainControl = GP & CrossingControl != Safe )
         }
 
-        "Test" {
-            G ((BrakeFault = Yes) & BarrierMotorFault = Yes) => G !(TrainControl = GP & CrossingControl != Safe )
-        }
     }
 }

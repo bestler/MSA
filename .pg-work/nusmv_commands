@@ -1,3 +1,2 @@
 go
-check_fsm
-quit
+check_ltlspec -p "! (   ( v.V_TrainSensorFault   =   L_No   &   v.V_BarrierClosedSensorFault   =   L_No   &   v.V_HodometerFault   =   L_No   &   v.V_BrakeFault   =   L_No )   U   ( ( ( v.V_degreeLevel   !=   0   &   v.V_position   <   v.V_endOfCrossingPos )   &   v.V_position   >=   0 ) )   )"

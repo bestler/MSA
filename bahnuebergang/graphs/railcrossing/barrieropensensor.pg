@@ -13,7 +13,7 @@ graph BarrierOpenSensor {
             guard { degreeLevel = 6 & BarrierOpenSensorFault = No}
         }
 
-        # Fehler: Meldet offen, obwohl nicht offen
+        # Fehler: Meldet offen, obwohl eigentlich nicht offen
 
         OpenNotDetected -> OpenDetected {
             guard { BarrierOpenSensorFault != No }
