@@ -1,13 +1,13 @@
 graph Odometer {
 
     vars {
-        int position_m [-200..50]
+        int position_m [-300..50]
         int velocity_m [0..5]
     }
 
     states {Measuring, NotMesuaring}
 
-    init: Measuring { velocity_m = 5 & position_m = -200}
+    init: Measuring { velocity_m = 5 & position_m = -300}
 
     transitions {
 

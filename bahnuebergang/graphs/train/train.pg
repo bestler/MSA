@@ -1,13 +1,13 @@
 graph Train {
 
     vars {
-        int position [-200..50]
+        int position [-300..50]
         int velocity [0..5]
     }
 
     states {Drive}
 
-    init: Drive {velocity = 5 & position = -200}
+    init: Drive {velocity = 5 & position = -300}
 
     transitions {
         Drive -> Drive {

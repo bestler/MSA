@@ -23,14 +23,14 @@ MODULE _VARS
         V_BarrierOpenSensor : {L_OpenNotDetected, L_OpenDetected};
         V_BarrierMotor : {L_Backward, L_Forward, L_Idle};
         V_velocity_m : 0..5;
-        V_position_m : -200..50;
+        V_position_m : -300..50;
         V_gp : {0};
         V_z : {20};
         V_a : {1};
         V_c : {5};
         V_counter : {0, 1, 2};
         V_velocity : 0..5;
-        V_position : -200..50;
+        V_position : -300..50;
         V_degreeLevel : 0..6;
         V_endOfCrossingPos : {4};
         V_time : 0..10;
@@ -145,11 +145,11 @@ MODULE _P_BrakeFault(v)
 
 MODULE _P_Odometer(v)
     INIT
-        ( v.V_Odometer   =   L_Measuring   &   ( v.V_velocity_m   =   5   &   v.V_position_m   =   -200 ) )
+        ( v.V_Odometer   =   L_Measuring   &   ( v.V_velocity_m   =   5   &   v.V_position_m   =   -300 ) )
     TRANS
-        ( ( v.V_Odometer = L_Measuring ) & ( next(v.V_Odometer) = L_Measuring ) & ( v.V_position   >=   -200   &   v.V_position   <=   50 ) & ( v.V_HodometerFault   =   L_No ) & ( next(v.V_velocity_m) = v.V_velocity & next(v.V_position_m) = v.V_position ) ) | 
+        ( ( v.V_Odometer = L_Measuring ) & ( next(v.V_Odometer) = L_Measuring ) & ( v.V_position   >=   -300   &   v.V_position   <=   50 ) & ( v.V_HodometerFault   =   L_No ) & ( next(v.V_velocity_m) = v.V_velocity & next(v.V_position_m) = v.V_position ) ) | 
         (!(
-        	( v.V_Odometer = L_Measuring ) & ( v.V_position   >=   -200   &   v.V_position   <=   50 ) & ( v.V_HodometerFault   =   L_No ))
+        	( v.V_Odometer = L_Measuring ) & ( v.V_position   >=   -300   &   v.V_position   <=   50 ) & ( v.V_HodometerFault   =   L_No ))
         	 & next(v.V_Odometer) = v.V_Odometer & next(v.V_velocity_m) = v.V_velocity_m & next(v.V_position_m) = v.V_position_m);
 
 MODULE _P_RadioChannel(v)
@@ -218,15 +218,15 @@ MODULE _P_TrainRadioModule(v)
 
 MODULE _P_Train(v)
     INIT
-        ( v.V_Train   =   L_Drive   &   ( v.V_velocity   =   5   &   v.V_position   =   -200 ) )
+        ( v.V_Train   =   L_Drive   &   ( v.V_velocity   =   5   &   v.V_position   =   -300 ) )
     TRANS
         ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( 0   >=   0   &   0   <=   5 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   <=   v.V_a ) ) & ( next(v.V_velocity) = 0 ) & ( next(v.V_position) = v.V_position ) ) | 
         ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_velocity   -   v.V_a )   >=   0   &   ( v.V_velocity   -   v.V_a )   <=   5 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   >   v.V_a ) ) & ( next(v.V_velocity) = ( v.V_velocity   -   v.V_a ) ) & ( next(v.V_position) = v.V_position ) ) | 
-        ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -200   &   ( v.V_position   +   v.V_velocity )   <=   50 ) & ( v.V_Brake   =   L_BrakeInactive ) & ( next(v.V_position) = ( v.V_position   +   v.V_velocity ) ) & ( next(v.V_velocity) = v.V_velocity ) ) | 
+        ( ( v.V_Train = L_Drive ) & ( next(v.V_Train) = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -300   &   ( v.V_position   +   v.V_velocity )   <=   50 ) & ( v.V_Brake   =   L_BrakeInactive ) & ( next(v.V_position) = ( v.V_position   +   v.V_velocity ) ) & ( next(v.V_velocity) = v.V_velocity ) ) | 
         (!(
         	( v.V_Train = L_Drive ) & ( 0   >=   0   &   0   <=   5 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   <=   v.V_a ) ) | 
         	( v.V_Train = L_Drive ) & ( ( v.V_velocity   -   v.V_a )   >=   0   &   ( v.V_velocity   -   v.V_a )   <=   5 ) & ( ( v.V_Brake   =   L_BrakeActive   &   v.V_velocity   >   v.V_a ) ) | 
-        	( v.V_Train = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -200   &   ( v.V_position   +   v.V_velocity )   <=   50 ) & ( v.V_Brake   =   L_BrakeInactive ))
+        	( v.V_Train = L_Drive ) & ( ( v.V_position   +   v.V_velocity )   >=   -300   &   ( v.V_position   +   v.V_velocity )   <=   50 ) & ( v.V_Brake   =   L_BrakeInactive ))
         	 & next(v.V_Train) = v.V_Train & next(v.V_velocity) = v.V_velocity & next(v.V_position) = v.V_position);
 
 MODULE _P_CrossingRadio(v)
